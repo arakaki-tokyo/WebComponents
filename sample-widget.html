@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        #example_ir2 {
+            padding-top: 3rem;
+        }
+
+        input-range[open] {
+            position: relative;
+        }
+
+        input-range output {
+            width: 30px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            background: #03a9f4;
+            color: #fff;
+            font-size: 12px;
+            display: block;
+            position: absolute;
+            transform: translate(-50%, -56px);
+            border-radius: 6px;
+        }
+
+        input-range output::before {
+            content: "";
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-top: 10px solid #03a9f4;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            margin-top: -1px;
+        }
+    </style>
+    <script defer type='module'>
+        import { InputRange, OutputFor } from './widgets.mjs';
+
+        const CEs = [
+            { class: InputRange, name: "input-range" },
+            { class: OutputFor, name: "output-for" },
+        ];
+
+        CEs.forEach(CE => customElements.define(CE.name, CE.class));
+    </script>
+</head>
+
+<body>
+    <div id="example_ir1">
+        <input-range min=-1 max=1 value=0></input-range>
+    </div>
+    <div id="example_ir2">
+        <input-range min=-10 max=10 value=0 open></input-range>
+        <input-range min=-100 max=100 value=0 open></input-range>
+        <input-range min=-1000 max=1000 value=0 open></input-range>
+    </div>
+</body>
+
+</html>
