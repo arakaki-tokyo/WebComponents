@@ -57,7 +57,10 @@ export class OutputFor extends HTMLElement {
         [
             "input",
             "change"
-        ].forEach(evtype => this.for.addEventListener(evtype, e => this.innerHTML = this.func(e.target.value)));
-        this.innerHTML = this.func(this.for.value);
+        ].forEach(evtype => this.for.addEventListener(evtype, e => this._exec()));
+        this._exec();
+    }
+    async _exec() {
+        this.innerHTML = await this.func(this.for.value);
     }
 }
