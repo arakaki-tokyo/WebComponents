@@ -60,6 +60,47 @@
         <input-range min=-100 max=100 value=0 open></input-range>
         <input-range min=-1000 max=1000 value=0 open></input-range>
     </div>
+    <div>
+        <input type="text" value="some text">
+        <output-for data-for='input[type="text"]'></output-for>
+    </div>
+    <div>
+        <script>
+            async function book(str) {
+                const data = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${str}`).then(res => res.json());
+                return `<img src="${data.items[0].volumeInfo.imageLinks.smallThumbnail}">`
+            }
+        </script>
+        <input type="search" value="コロナ 木村盛世">
+        <div>
+            <output-for data-for='input[type="search"]' data-func="book"></output-for>
+        </div>
+
+    </div>
+    <div>
+        <script>
+
+            window.forcast = (function () {
+                const areaURL = "https://www.jma.go.jp/bosai/common/const/area.json";
+                const areaPromise = fetch(areaURL).then(res => res.json());
+                return async function forcast(pref) {
+                    if (!pref) return "";
+                    const area = await areaPromise;
+                    let code;
+                    Object.entries(area.offices).forEach(([c, obj]) => { if (obj.name.startsWith(pref)) { code = c } })
+                    if (!code) return "";
+                    const forcastURL = `https://www.jma.go.jp/bosai/forecast/data/forecast/${code}.json`;
+                    const data = await fetch(forcastURL).then(res => res.json());
+                    return data[0].timeSeries[0].areas[0].weathers[0];
+                }
+            })();
+        </script>
+        <input id="tenki" type="search" value="東京">
+        <div>
+            <output-for data-for='#tenki' data-func="forcast"></output-for>
+        </div>
+
+    </div>
 </body>
 
 </html>

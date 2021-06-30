@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script defer src="https://cdn.plot.ly/plotly-2.0.0-rc.3.min.js"></script>
+    <script defer>
+        function factory(inclination) {
+            const rate = 1.2;
+            let distance = 0;
+            return function () {
+                const retval = distance;
+                inclination *= rate;
+                distance += inclination;
+                return retval;
+            }
+        }
+        window.quadric = function quadric(x) { return x * x };
+        window.genQuadric = (a = 1, b = 0, c = 0) => x => Number(a) * x * x + Number(b) * x + Number(c);
+        window.freeFall = t => 2.80665 * t * t;
+        window.myFall = factory(2);
+    </script>
+    <script defer type='module'>
+        import { PChart } from './plotly_charts.mjs';
+        import { InputRange } from './widgets.mjs';
+
+        const CEs = [
+            { class: PChart, name: "p-chart" },
+            { class: InputRange, name: "input-range" }
+        ];
+
+        CEs.forEach(CE => customElements.define(CE.name, CE.class));
+    </script>
+</head>
+
+<body>
+    <p-chart data-raw='[{"x": [1, 2, 3, 4, 5], "y": [1, 2, 4, 8, 16] }]'></p-chart>
+    <p-chart data-function='quadric' data-min=-10 data-max=10></p-chart>
+    <p-chart data-factory='genQuadric' data-min=-10 data-max=10
+        data-config='{"responsive": true}'
+        data-layout='{"autosize": false}'>
+        <p>a: <input-range min=-10 max=10 value=1 data-param>
+        </p>
+        <p>b: <input-range min=-10 max=10 value=1 data-param>
+        </p>
+        <p>c: <input-range min=-10 max=10 value=1 data-param>
+        </p>
+    </p-chart>
+    <p-chart data-function='freeFall' data-min=0 data-max=30></p-chart>
+    <p-chart data-function='myFall' data-min=0 data-max=30></p-chart>
+    <p-chart data-function='freeFall, myFall' data-min=0 data-max=30 data-step=1></p-chart>
+</body>
+
+</html>
