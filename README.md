@@ -16,20 +16,32 @@ customElements.define("input-range", InputRange);
 ```
 
 #### attributes
-|   |   |   |
-|---|---|---|
-| open(read-only)  | boolean  | falseの場合にシャドウDOMツリーがアタッチされる。default = false  |
+| name  | description  |
+|---|---|
+| open(read-only)  | boolean: falseの場合にシャドウDOMツリーがアタッチされる。default = false  |
 
 他、`<input type="range">`で利用可能な属性を受け取る。
 
 #### example
-<script defer type='module'>
-    import { InputRange, OutputFor } from 'https://arakaki-tokyo.github.io/WebComponents/widgets.mjs';
-    
-    [	// Custom Elements definition
-        { class: InputRange, name: "input-range" },
-        { class: OutputFor, name: "output-for" },
-    ].forEach(CE => customElements.define(CE.name, CE.class));
-</script>
+[widgets example #inputrange](https://arakaki.tokyo/widgets-example/#inputrange)
 
-<input-range min=-10 max=10>
+### OutputFor
+#### usage
+`js`
+```js
+import { OutputFor } from './widgets.mjs';
+customElements.define("output-for", OutputFor);
+```
+`html`
+```html
+<input type="text">
+<output-for data-for='input[type="text"]'>
+```
+
+#### attributes
+| name  | description  |
+|---|---|
+| data-func  | DOMString: グローバルスコープで参照できる関数名。指定したinput要素のvalueを引数に取り、戻り値が表示される。  |
+
+#### example
+[widgets example](https://arakaki.tokyo/widgets-example/#outputfor)
