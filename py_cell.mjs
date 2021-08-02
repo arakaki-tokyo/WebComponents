@@ -90,69 +90,9 @@ export class PyCell extends HTMLElement {
 
 
         // add EventListener
-        this.input.addEventListener("keydown", e => {
-            // キー入力の挙動と衝突しないように0-timeout
-            setTimeout(() => {
-                // 改行時にインデントを引き継ぐ
-                if (e.key === "Enter") {
-                    const position = e.target.selectionStart;
-                    const precedings = e.target.value.slice(0, position - 1);
-                    const lastLineHead = precedings.lastIndexOf('\n') + 1;
-
-                    let thisLineHead = '\n';
-                    let cnt = 0;
-                    while (precedings[lastLineHead + cnt] == ' ') cnt++, thisLineHead += " ";
-
-                    e.target.value = precedings + thisLineHead + e.target.value.substring(position);
-
-                    e.target.selectionStart = position + cnt;
-                    e.target.selectionEnd = position + cnt;
-                }
-
-                // シンタックスハイライト
-                // 末尾の改行は削除される。preのheightやline-numberの不整合を防ぐために改行を保持させる
-                if (window.Prism) {
-                    this.code.innerHTML = e.target.value + (e.target.value.at(-1) === '\n' ? " " : "");
-                    Prism.highlightElement(this.code);
-                }
-
-                // 高さ計算
-                this.calcHeight();
-            }, 0)
-        })
-        this.input.addEventListener("scroll", e => {
-            this.code.parentElement.scrollLeft = this.input.scrollLeft;
-            this.code.parentElement.scrollTop = this.input.scrollTop;
-
-        })
-        this.btnRun.addEventListener("click", async e => {
-            e.target.disabled = true;
-            e.target.style.color = "transparent";
-            this.loading.style.display = "block";
-
-            try {
-                if (this.useWorker) {
-                    const { results, log } = await this.Pyodide(this.input.value);
-                    this.out.innerHTML = log + (results ? results : "");
-                } else {
-                    this.out.innerHTML = "";
-                    const pyodide = await this.Pyodide || window.pyodide;
-                    await pyodide.runPythonAsync('if not "sys" in dir(): import sys');
-                    const sys = pyodide.globals.get('sys');
-                    sys.stdout = this;
-
-                    const output = await pyodide.runPythonAsync(this.input.value);
-                    if (output) this.write(output);
-                }
-
-            } catch (e) {
-                this.out.innerHTML = e;
-            }
-            e.target.disabled = false;
-            e.target.style.color = "";
-            this.loading.style.display = "none";
-
-        })
+        this.input.addEventListener("keydown", this.inputOnkeydown.bind(this))
+        this.input.addEventListener("scroll", this.inputOnscroll.bind(this))
+        this.btnRun.addEventListener("click", this.btnOnclick.bind(this))
 
         // initialize
         this.input.dispatchEvent(new Event("keydown"));
@@ -195,5 +135,70 @@ export class PyCell extends HTMLElement {
     }
     write(s) {
         this.out.innerHTML += s;
+    }
+
+    inputOnkeydown(e) {
+        // キー入力の挙動と衝突しないように0-timeout
+        setTimeout(() => {
+            // 改行時にインデントを引き継ぐ
+            if (e.key === "Enter") {
+                const position = e.target.selectionStart;
+                const precedings = e.target.value.slice(0, position - 1);
+                const lastLineHead = precedings.lastIndexOf('\n') + 1;
+
+                let thisLineHead = '\n';
+                let cnt = 0;
+                while (precedings[lastLineHead + cnt] == ' ') cnt++, thisLineHead += " ";
+
+                e.target.value = precedings + thisLineHead + e.target.value.substring(position);
+
+                e.target.selectionStart = position + cnt;
+                e.target.selectionEnd = position + cnt;
+            }
+
+            // シンタックスハイライト
+            // 末尾の改行は削除される。preのheightやline-numberの不整合を防ぐために改行を保持させる
+            if (window.Prism) {
+                this.code.innerHTML = e.target.value + (e.target.value.at(-1) === '\n' ? " " : "");
+                Prism.highlightElement(this.code);
+            }
+
+            // 高さ計算
+            this.calcHeight();
+        }, 0)
+    }
+
+    inputOnscroll(e) {
+        this.code.parentElement.scrollLeft = this.input.scrollLeft;
+        this.code.parentElement.scrollTop = this.input.scrollTop;
+
+    }
+    async btnOnclick(e) {
+        e.target.disabled = true;
+        e.target.style.color = "transparent";
+        this.loading.style.display = "block";
+
+        try {
+            if (this.useWorker) {
+                const { results, log } = await this.Pyodide(this.input.value);
+                this.out.innerHTML = log + (results ? results : "");
+            } else {
+                this.out.innerHTML = "";
+                const pyodide = await this.Pyodide || window.pyodide;
+                await pyodide.runPythonAsync('if not "sys" in dir(): import sys');
+                const sys = pyodide.globals.get('sys');
+                sys.stdout = this;
+
+                const output = await pyodide.runPythonAsync(this.input.value);
+                if (output) this.write(output);
+            }
+
+        } catch (e) {
+            this.out.innerHTML = e;
+        }
+        e.target.disabled = false;
+        e.target.style.color = "";
+        this.loading.style.display = "none";
+
     }
 }
