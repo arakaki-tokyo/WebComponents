@@ -90,12 +90,12 @@ export class PyCell extends HTMLElement {
 
 
         // add EventListener
-        this.input.addEventListener("keydown", this.inputOnkeydown.bind(this))
+        this.input.addEventListener("input", this.inputOninput.bind(this))
         this.input.addEventListener("scroll", this.inputOnscroll.bind(this))
         this.btnRun.addEventListener("click", this.btnOnclick.bind(this))
 
         // initialize
-        this.input.dispatchEvent(new Event("keydown"));
+        this.input.dispatchEvent(new Event("input"));
 
         this.useWorker = ("useWorker" in this.dataset && this.dataset.useWorker !== "false");
         if ((Function(`return typeof ${this.dataset.pyodide}`)()) !== "undefined") {
@@ -137,11 +137,20 @@ export class PyCell extends HTMLElement {
         this.out.innerHTML += s;
     }
 
-    inputOnkeydown(e) {
+    /**
+     * pythonスクリプト入力欄の制御。以下の処理を実行する。
+     *  - 改行時にインデントを引き継ぐ
+     *  - シンタックスハイライトを更新する
+     *  - 入力欄とシンタックスハイライト表示領域の高さを更新する
+     * 
+     * @param {*} e
+     * @memberof PyCell
+     */
+    inputOninput(e) {
         // キー入力の挙動と衝突しないように0-timeout
         setTimeout(() => {
             // 改行時にインデントを引き継ぐ
-            if (e.key === "Enter") {
+            if (e.inputType === "insertLineBreak") {
                 const position = e.target.selectionStart;
                 const precedings = e.target.value.slice(0, position - 1);
                 const lastLineHead = precedings.lastIndexOf('\n') + 1;
