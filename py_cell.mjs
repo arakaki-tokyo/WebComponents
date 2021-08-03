@@ -98,7 +98,7 @@ export class PyCell extends HTMLElement {
         this.input.dispatchEvent(new Event("input"));
 
         this.useWorker = ("useWorker" in this.dataset && this.dataset.useWorker !== "false");
-        if ((Function(`return typeof ${this.dataset.pyodide}`)()) !== "undefined") {
+        if ((Function(`try{return typeof ${this.dataset.pyodide}}catch(e){return "undefined"}`)()) !== "undefined") {
             this.Pyodide = Function(`return ${this.dataset.pyodide}`)();
 
             if ("execute" in this.dataset && this.dataset.execute != "false") {
