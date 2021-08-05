@@ -3,6 +3,7 @@
  * @extends HTMLElement
  */
 export class PyCell extends HTMLElement {
+    static executeCnt = 0
     connectedCallback() {
         this.style.display = "block";
         this.innerHTML = `
@@ -11,7 +12,12 @@ export class PyCell extends HTMLElement {
                 <textarea data-role="input" spellcheck="false" wrap="off">${this.innerHTML}</textarea>
             </div>
             <div style="display:flex;">
-                <div style="margin-right:3px;"><button data-role="btnRun" style="position:relative;"><span data-role="loading"></span>Run</button></div>
+                <div style="margin-right:3px;">
+                    <div>
+                        <button data-role="btnRun" style="position:relative;"><span data-role="loading"></span>Run</button>
+                    </div>    
+                    <div data-role="executed"></div>
+                </div>
                 <pre data-role="out"></pre>
             </div>
         `;
@@ -49,6 +55,12 @@ export class PyCell extends HTMLElement {
             iterations: Infinity
         }
         );
+
+        const executedCSS = {
+            textAlign: "center",
+            color: "gray",
+        }
+        Object.entries(executedCSS).forEach(([prop, value]) => this.executed.style[prop] = value);
 
         const inputCSS = {
             display: "block",
@@ -208,6 +220,7 @@ export class PyCell extends HTMLElement {
         e.target.disabled = false;
         e.target.style.color = "";
         this.loading.style.display = "none";
+        this.executed.innerHTML = `[${this.constructor.executeCnt += 1}]`;
 
     }
 }
