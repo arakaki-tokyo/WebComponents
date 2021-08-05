@@ -8,9 +8,9 @@ class OutBuffer {
 }
 
 function load({ packages } = {}) {
-    importScripts('https://cdn.jsdelivr.net/pyodide/v0.17.0/full/pyodide.js');
+    importScripts('https://cdn.jsdelivr.net/pyodide/v0.18.0/full/pyodide.js');
     self.Pyodide = (async () => {
-        await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.17.0/full/' });
+        self.pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.18.0/full/' });
         self.pyodide.loadPackage(packages);
         return self.pyodide;
     })();
