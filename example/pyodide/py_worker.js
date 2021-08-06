@@ -11,7 +11,7 @@ function load({ packages } = {}) {
     importScripts('https://cdn.jsdelivr.net/pyodide/v0.18.0/full/pyodide.js');
     self.Pyodide = (async () => {
         self.pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.18.0/full/' });
-        self.pyodide.loadPackage(packages);
+        await self.pyodide.loadPackage(packages);
         return self.pyodide;
     })();
 }
@@ -31,8 +31,12 @@ async function exec({ code }) {
         const out = new OutBuffer()
         sys.stdout = out;
 
+        let results = await pyodide.runPythonAsync(code);
+        if (pyodide.isPyProxy(results) && "_repr_html_" in results) {
+            results = results._repr_html_();
+        }
         self.postMessage({
-            results: await pyodide.runPythonAsync(code),
+            results: results ? String(results) : "",
             log: out.log
         });
     }

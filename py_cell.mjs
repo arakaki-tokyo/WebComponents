@@ -146,7 +146,7 @@ export class PyCell extends HTMLElement {
         this.input.style.height = this.code.parentElement.style.height = `${height}px`;
     }
     write(s) {
-        this.out.innerHTML += s;
+        this.out.innerText += s;
     }
 
     /**
@@ -180,7 +180,8 @@ export class PyCell extends HTMLElement {
             // シンタックスハイライト
             // 末尾の改行は削除される。preのheightやline-numberの不整合を防ぐために改行を保持させる
             if (window.Prism) {
-                this.code.innerHTML = e.target.value + (e.target.value.at(-1) === '\n' ? " " : "");
+                const code = `${e.target.value}${(e.target.value.at(-1) ?? '\n') === '\n' ? " " : ""}`;
+                this.code.innerHTML = code.replaceAll("<", "&lt;");
                 Prism.highlightElement(this.code);
             }
 
@@ -200,27 +201,51 @@ export class PyCell extends HTMLElement {
         this.loading.style.display = "block";
 
         try {
+            this.out.innerHTML = "";
             if (this.useWorker) {
                 const { results, log } = await this.Pyodide(this.input.value);
-                this.out.innerHTML = log + (results ? results : "");
+                this.write(log);
+                this.out.appendChild(this.strToElm(results));
+
             } else {
-                this.out.innerHTML = "";
                 const pyodide = await this.Pyodide || window.pyodide;
                 await pyodide.runPythonAsync('if not "sys" in dir(): import sys');
                 const sys = pyodide.globals.get('sys');
                 sys.stdout = this;
 
-                const output = await pyodide.runPythonAsync(this.input.value);
-                if (output) this.write(output);
+                const results = await pyodide.runPythonAsync(this.input.value);
+                sys.destroy();
+
+                if (results !== undefined) {
+                    if (pyodide.isPyProxy(results) && "_repr_html_" in results) {
+                        this.out.appendChild(this.strToElm(results._repr_html_()));
+                    } else {
+                        this.out.innerHTML += results;
+                    }
+                }
+                if (document.body.lastElementChild.id.startsWith("matplotlib")) {
+                    this.out.appendChild(document.body.lastElementChild);
+                }
             }
 
         } catch (e) {
             this.out.innerHTML = e;
         }
+        // update style of btnRun and executed
         e.target.disabled = false;
         e.target.style.color = "";
         this.loading.style.display = "none";
         this.executed.innerHTML = `[${this.constructor.executeCnt += 1}]`;
 
+    }
+    strToElm(str) {
+        const container = document.createElement("div");
+        container.innerHTML = str;
+        container.querySelectorAll("script").forEach(s => {
+            const newScript = document.createElement("script");
+            newScript.innerText = s.innerText;
+            s.replaceWith(newScript);
+        })
+        return container
     }
 }
