@@ -1,3 +1,92 @@
+(function insertStyle() {
+    const style = document.createElement("style");
+    style.innerHTML =
+        // for pandas DaraFrame table
+        `
+        [data-role="out"] table{
+            border-collapse: collapse;
+            border: none;
+            font-size: 12px;
+            border-color: transparent;
+        }
+        [data-role="out"] thead{
+            border-bottom: 1px solid gray;
+        }
+        [data-role="out"] th, tr, td{
+            text-align: right;
+            padding: 0.5em 0.5em;
+        }
+        [data-role="out"] tbody tr:nth-child(odd) {
+            background: whitesmoke;
+        }
+        [data-role="out"] tbody tr:hover {
+            background: paleturquoise;
+        }` +
+        // for matplotlib html5_canvas_backend v.0.18.0
+        `
+        .fa::after{
+            display: inline-block;
+            height: 1rem;
+            width: 1rem;
+            background: #495057;
+            transition-duration: 0.4s;
+        }
+        .fa:hover::after{
+            background: #fff;
+        }
+        
+        .fa-home::after {
+            content: "";
+            clip-path: url(#fa-home);
+        }
+        .fa-arrow-left::after {
+            content: "";
+            clip-path: url(#fa-arrow-left);
+        }
+        .fa-search-plus::after {
+            content: "";
+            clip-path: url(#fa-search-plus);
+        }
+        .fa-arrows::after {
+            content: "";
+            clip-path: url(#fa-arrows);
+        }
+        .fa-arrow-right::after {
+            content: "";
+            clip-path: url(#fa-arrow-right);
+        }
+        `;
+    document.querySelector("head").appendChild(style);
+
+    // for matplotlib html5_canvas_backend v.0.18.0
+    document.body.insertAdjacentHTML("afterbegin", `
+        <svg aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <style>
+                clipPath{
+                    transform: scale(.6);
+                }
+            </style>
+            <defs>
+                <clipPath id="fa-arrows" viewBox="0 0 28 28">
+                    <path d="M28 14c0 0.266-0.109 0.516-0.297 0.703l-4 4c-0.187 0.187-0.438 0.297-0.703 0.297-0.547 0-1-0.453-1-1v-2h-6v6h2c0.547 0 1 0.453 1 1 0 0.266-0.109 0.516-0.297 0.703l-4 4c-0.187 0.187-0.438 0.297-0.703 0.297s-0.516-0.109-0.703-0.297l-4-4c-0.187-0.187-0.297-0.438-0.297-0.703 0-0.547 0.453-1 1-1h2v-6h-6v2c0 0.547-0.453 1-1 1-0.266 0-0.516-0.109-0.703-0.297l-4-4c-0.187-0.187-0.297-0.438-0.297-0.703s0.109-0.516 0.297-0.703l4-4c0.187-0.187 0.438-0.297 0.703-0.297 0.547 0 1 0.453 1 1v2h6v-6h-2c-0.547 0-1-0.453-1-1 0-0.266 0.109-0.516 0.297-0.703l4-4c0.187-0.187 0.438-0.297 0.703-0.297s0.516 0.109 0.703 0.297l4 4c0.187 0.187 0.297 0.438 0.297 0.703 0 0.547-0.453 1-1 1h-2v6h6v-2c0-0.547 0.453-1 1-1 0.266 0 0.516 0.109 0.703 0.297l4 4c0.187 0.187 0.297 0.438 0.297 0.703z"></path>
+                </clipPath>
+                <clipPath id="fa-home" viewBox="0 0 26 28">
+                    <path d="M22 15.5v7.5c0 0.547-0.453 1-1 1h-6v-6h-4v6h-6c-0.547 0-1-0.453-1-1v-7.5c0-0.031 0.016-0.063 0.016-0.094l8.984-7.406 8.984 7.406c0.016 0.031 0.016 0.063 0.016 0.094zM25.484 14.422l-0.969 1.156c-0.078 0.094-0.203 0.156-0.328 0.172h-0.047c-0.125 0-0.234-0.031-0.328-0.109l-10.813-9.016-10.813 9.016c-0.109 0.078-0.234 0.125-0.375 0.109-0.125-0.016-0.25-0.078-0.328-0.172l-0.969-1.156c-0.172-0.203-0.141-0.531 0.063-0.703l11.234-9.359c0.656-0.547 1.719-0.547 2.375 0l3.813 3.187v-3.047c0-0.281 0.219-0.5 0.5-0.5h3c0.281 0 0.5 0.219 0.5 0.5v6.375l3.422 2.844c0.203 0.172 0.234 0.5 0.063 0.703z"></path>
+                </clipPath>
+                <clipPath id="fa-arrow-right" viewBox="0 0 23 28">
+                    <path d="M23 15c0 0.531-0.203 1.047-0.578 1.422l-10.172 10.172c-0.375 0.359-0.891 0.578-1.422 0.578s-1.031-0.219-1.406-0.578l-1.172-1.172c-0.375-0.375-0.594-0.891-0.594-1.422s0.219-1.047 0.594-1.422l4.578-4.578h-11c-1.125 0-1.828-0.938-1.828-2v-2c0-1.062 0.703-2 1.828-2h11l-4.578-4.594c-0.375-0.359-0.594-0.875-0.594-1.406s0.219-1.047 0.594-1.406l1.172-1.172c0.375-0.375 0.875-0.594 1.406-0.594s1.047 0.219 1.422 0.594l10.172 10.172c0.375 0.359 0.578 0.875 0.578 1.406z"></path>
+                </clipPath>
+                <clipPath id="fa-arrow-left" viewBox="0 0 25 28">
+                    <path d="M24 14v2c0 1.062-0.703 2-1.828 2h-11l4.578 4.594c0.375 0.359 0.594 0.875 0.594 1.406s-0.219 1.047-0.594 1.406l-1.172 1.188c-0.359 0.359-0.875 0.578-1.406 0.578s-1.047-0.219-1.422-0.578l-10.172-10.187c-0.359-0.359-0.578-0.875-0.578-1.406s0.219-1.047 0.578-1.422l10.172-10.156c0.375-0.375 0.891-0.594 1.422-0.594s1.031 0.219 1.406 0.594l1.172 1.156c0.375 0.375 0.594 0.891 0.594 1.422s-0.219 1.047-0.594 1.422l-4.578 4.578h11c1.125 0 1.828 0.938 1.828 2z"></path>
+                </clipPath>
+                <clipPath id="fa-search-plus" viewBox="0 0 26 28">
+                    <path d="M16 12.5v1c0 0.266-0.234 0.5-0.5 0.5h-3.5v3.5c0 0.266-0.234 0.5-0.5 0.5h-1c-0.266 0-0.5-0.234-0.5-0.5v-3.5h-3.5c-0.266 0-0.5-0.234-0.5-0.5v-1c0-0.266 0.234-0.5 0.5-0.5h3.5v-3.5c0-0.266 0.234-0.5 0.5-0.5h1c0.266 0 0.5 0.234 0.5 0.5v3.5h3.5c0.266 0 0.5 0.234 0.5 0.5zM18 13c0-3.859-3.141-7-7-7s-7 3.141-7 7 3.141 7 7 7 7-3.141 7-7zM26 26c0 1.109-0.891 2-2 2-0.531 0-1.047-0.219-1.406-0.594l-5.359-5.344c-1.828 1.266-4.016 1.937-6.234 1.937-6.078 0-11-4.922-11-11s4.922-11 11-11 11 4.922 11 11c0 2.219-0.672 4.406-1.937 6.234l5.359 5.359c0.359 0.359 0.578 0.875 0.578 1.406z"></path>
+                </clipPath>
+            </defs>
+        </svg>
+    `)
+})();
+
 /**
  * Class python-cell like jupyter as Web Components
  * @extends HTMLElement
@@ -240,6 +329,7 @@ export class PyCell extends HTMLElement {
     }
     strToElm(str) {
         const container = document.createElement("div");
+        container.style.whiteSpace = "initial";
         container.innerHTML = str;
         container.querySelectorAll("script").forEach(s => {
             const newScript = document.createElement("script");
