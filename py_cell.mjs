@@ -380,7 +380,7 @@ export class PyCell extends HTMLElement {
                     if (pyodide.isPyProxy(results) && "_repr_html_" in results) {
                         this.out.appendChild(this.strToElm(results._repr_html_()));
                     } else {
-                        this.write(results);
+                        this.out.appendChild(this.strToElm(results));
                     }
                 }
                 if (document.body.lastElementChild.id.startsWith("matplotlib")) {
@@ -405,6 +405,8 @@ export class PyCell extends HTMLElement {
         container.innerHTML = str;
         container.querySelectorAll("script").forEach(s => {
             const newScript = document.createElement("script");
+            for (let i = 0; i < s.attributes.length; i++)
+                newScript.setAttribute(s.attributes[i].name, s.attributes[i].value);
             newScript.innerText = s.innerText;
             s.replaceWith(newScript);
         })
