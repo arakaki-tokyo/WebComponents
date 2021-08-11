@@ -245,7 +245,7 @@ export class PyCell extends HTMLElement {
             width: "100%",
             background: "transparent",
             color: "transparent",
-            caretColor: "black",
+            caretColor: this.getRevCol(getComputedStyle(this.code.parentElement).backgroundColor),
             border: "solid 1px",
             padding: "1em",
             paddingLeft: `${this.code.parentElement.classList.contains("line-numbers") ? "3.8em" : "1em"}`,
@@ -398,6 +398,15 @@ export class PyCell extends HTMLElement {
         this.loading.style.display = "none";
         this.executed.innerHTML = `[${this.constructor.executeCnt += 1}]`;
 
+    }
+    getRevCol(rgbStr) {
+        const match = [...rgbStr.matchAll(/\d+/g)];
+        const r = parseInt(match[0][0], 10);
+        const g = parseInt(match[1][0], 10);
+        const b = parseInt(match[2][0], 10);
+
+        const base = 255;
+        return `rgb(${base - r}, ${base - g}, ${base - b})`
     }
     strToElm(str) {
         const container = document.createElement("div");
