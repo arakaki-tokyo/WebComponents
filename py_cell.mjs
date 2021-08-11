@@ -177,7 +177,8 @@ customElements.define("py-cell-out", PyCellOut);
  * @extends HTMLElement
  */
 export class PyCell extends HTMLElement {
-    static executeCnt = 0
+    static executeCnt = 0;
+    static #queue = Promise.resolve();
     connectedCallback() {
         this.style.display = "block";
         this.innerHTML = `
@@ -360,43 +361,45 @@ export class PyCell extends HTMLElement {
         e.target.style.color = "transparent";
         this.loading.style.display = "block";
 
-        try {
-            this.out.innerHTML = "";
-            if (this.useWorker) {
-                const { results, log } = await this.Pyodide(this.input.value);
-                this.write(log);
-                this.out.appendChild(this.strToElm(results));
+        this.constructor.#queue = this.constructor.#queue.catch(() => true).then(async () => {
+            try {
+                this.out.innerHTML = "";
+                if (this.useWorker) {
+                    const { results, log } = await this.Pyodide(this.input.value);
+                    this.write(log);
+                    this.out.appendChild(this.strToElm(results));
 
-            } else {
-                const pyodide = await this.Pyodide || window.pyodide;
-                await pyodide.runPythonAsync('if not "sys" in dir(): import sys');
-                const sys = pyodide.globals.get('sys');
-                sys.stdout = this;
+                } else {
+                    const pyodide = await this.Pyodide || window.pyodide;
+                    await pyodide.runPythonAsync('if not "sys" in dir(): import sys');
+                    const sys = pyodide.globals.get('sys');
+                    sys.stdout = this;
 
-                const results = await pyodide.runPythonAsync(this.input.value);
-                sys.destroy();
+                    const results = await pyodide.runPythonAsync(this.input.value);
+                    sys.destroy();
 
-                if (results !== undefined) {
-                    if (pyodide.isPyProxy(results) && "_repr_html_" in results) {
-                        this.out.appendChild(this.strToElm(results._repr_html_()));
-                    } else {
-                        this.out.appendChild(this.strToElm(results));
+                    if (results !== undefined) {
+                        if (pyodide.isPyProxy(results) && "_repr_html_" in results) {
+                            this.out.appendChild(this.strToElm(results._repr_html_()));
+                        } else {
+                            this.out.appendChild(this.strToElm(results));
+                        }
+                    }
+                    if (document.body.lastElementChild.id.startsWith("matplotlib")) {
+                        this.out.appendChild(document.body.lastElementChild);
                     }
                 }
-                if (document.body.lastElementChild.id.startsWith("matplotlib")) {
-                    this.out.appendChild(document.body.lastElementChild);
-                }
-            }
-            this.out.isVisible = true;
+                this.out.isVisible = true;
 
-        } catch (e) {
-            this.write(e);
-        }
-        // update style of btnRun and executed
-        e.target.disabled = false;
-        e.target.style.color = "";
-        this.loading.style.display = "none";
-        this.executed.innerHTML = `[${this.constructor.executeCnt += 1}]`;
+            } catch (e) {
+                this.write(e);
+            }
+            // update style of btnRun and executed
+            e.target.disabled = false;
+            e.target.style.color = "";
+            this.loading.style.display = "none";
+            this.executed.innerHTML = `[${this.constructor.executeCnt += 1}]`;
+        })
 
     }
     getRevCol(rgbStr) {
