@@ -1,8 +1,8 @@
 const dir = import.meta.url.match(/^.*\//g)[0];
 const pyodideWorker = new Worker(`${dir}py_worker.js`);
 let jobs = Promise.resolve();
-export function load(packages = []) {
-    pyodideWorker.postMessage({ function: "load", args: { packages } })
+export function load(packages = [], init = []) {
+    pyodideWorker.postMessage({ function: "load", args: { packages, init } })
 }
 
 export async function exec(code) {
