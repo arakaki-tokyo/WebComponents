@@ -104,7 +104,7 @@ class PyCellOut extends HTMLElement {
                     white-space: pre-wrap;
                     display: block;
                     overflow: auto;
-                    padding-right: 1em;
+                    padding-right: 1.5em;
                 }
                 [data-role="bar"] {
                     position: absolute;
@@ -411,12 +411,30 @@ export class PyCell extends HTMLElement {
     strToElm(str) {
         const container = document.createElement("div");
         container.style.whiteSpace = "initial";
-        container.innerHTML = str;
+        container.innerHTML = str
+            .replaceAll(/<\/?html.*?>/g, "")
+            .replaceAll(/<\/?head.*?>/g, "")
+            .replaceAll(/<meta.*?>/g, "")
+            .replaceAll(/<title>.*<\/title>/g, "");
+
+        let outerScriptId = '';
         container.querySelectorAll("script").forEach(s => {
             const newScript = document.createElement("script");
+
             for (let i = 0; i < s.attributes.length; i++)
                 newScript.setAttribute(s.attributes[i].name, s.attributes[i].value);
-            newScript.innerText = s.innerText;
+
+            if (newScript.hasAttribute("src")) {
+                outerScriptId = Date.now();
+                newScript.setAttribute("id", outerScriptId);
+            } else if (outerScriptId && newScript.type !== 'application/json') {
+                newScript.innerText = `
+                    document.getElementById('${outerScriptId}')
+                    .addEventListener('load', ()=>{${s.innerText}})`;
+            } else {
+                newScript.innerText = s.innerText;
+            }
+
             s.replaceWith(newScript);
         })
         return container
