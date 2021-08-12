@@ -12,11 +12,11 @@
     <!-- pyodide -->
     <script defer id="pyodideJs" src="https://cdn.jsdelivr.net/pyodide/v0.17.0/full/pyodide.js"></script>
     <script defer type='module'>
-        import * as pyodide from '../pyodide/py_worker.mjs';
+        import * as pyodide from './pyodide/py_worker.mjs';
         pyodide.load();
         globalThis.pyodide = pyodide;
 
-        import { PyCell } from '../../py_cell.mjs';
+        import { PyCell } from '../py_cell.mjs';
         customElements.define("py-cell", PyCell);
     </script>
 </head>
