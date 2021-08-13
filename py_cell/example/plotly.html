@@ -2,27 +2,21 @@
 <html>
 
 <head>
-    <!-- prism syntax highlighter -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/line-numbers/prism-line-numbers.min.css" integrity="sha512-cbQXwDFK7lj2Fqfkuxbo5iD1dSbLlJGXGpfTDqbggqjHJeyzx88I3rfwjS38WJag/ihH7lzuGlGHpDBymLirZQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.23.0/prism.min.js"></script>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-python.min.js" integrity="sha512-nvWJ2DdGeQzxIYP5eo2mqC+kXLYlH4QZ/AWYZ/yDc5EqM74jiC5lxJ+8d+6zI/H9MlsIIjrJsaRTgLtvo+Jy6A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/line-numbers/prism-line-numbers.min.js" integrity="sha512-dubtf8xMHSQlExGRQ5R7toxHLgSDZ0K7AunqPWHXmJQ8XyVIG19S1T95gBxlAeGOK02P4Da2RTnQz0Za0H0ebQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-    <script defer src="init_pyodide.js" onload='initPyodide({isWorker:true, packages:["micropip", "pandas"], init:["webbrowser"]})'></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/vs2015.min.css" integrity="sha512-mtXspRdOWHCYp+f4c7CkWGYPPRAhq9X+xCvJMUBVAb6pqA4U8pxhT3RWT3LP3bKbiolYL2CkL1bSKZZO4eeTew==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script defer src="init_pyodide.js" onload='initPyodide({isWorker:true, packages:["micropip", "statsmodels", "pandas"], init:["webbrowser"]})'></script>
 
 </head>
 
 <body>
-    <py-cell class="line-numbers" data-execute="false" data-pyodide="Pyodide">
+    <py-cell data-execute="false" data-pyodide="Pyodide">
 import micropip
 micropip.install('plotly==5.0.0')</py-cell>
-    <py-cell class="line-numbers" data-execute="false" data-pyodide="Pyodide">
+    <py-cell data-execute="false" data-pyodide="Pyodide">
 # スクリプトの最後にFigureオブジェクトを評価する際に必要
 import webbrowser
 webbrowser.get = lambda:None
     </py-cell>
-    <py-cell class="line-numbers" data-execute="false" data-pyodide="Pyodide">
+    <py-cell data-execute="false" data-pyodide="Pyodide">
 import plotly.express as px
 xs = range(-30, 30)
 ys = list(map(lambda x: x**3, xs))
@@ -34,10 +28,10 @@ fig1
     </py-cell>
     <p>描画の設定を追加</p>
     <a href="https://plotly.com/python/configuration-options/">Configuration | Python | Plotly</a>
-    <py-cell class="line-numbers" data-execute="false" data-pyodide="Pyodide">
+    <py-cell data-execute="false" data-pyodide="Pyodide">
 fig1.to_html(config={'scrollZoom': True})
     </py-cell>
-    <py-cell class="line-numbers" data-execute="false" data-pyodide="Pyodide"></py-cell>
+    <py-cell data-execute="false" data-pyodide="Pyodide"></py-cell>
 
 </body>
 
