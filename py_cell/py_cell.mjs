@@ -120,9 +120,9 @@ class PyCellIn extends HTMLElement {
                 }
                 [data-role="lineNumber"] *{
                     display: flex;
-                    font-size: .9em;
+                    font-size: 1em;
                     font-family: "consolas";
-                    height: 1.5rem;
+                    height: 1.5em;
                     align-items: center;
                     justify-content: flex-end;
                 }
