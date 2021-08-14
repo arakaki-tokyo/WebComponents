@@ -132,7 +132,7 @@ class PyCellIn extends HTMLElement {
                 }
             </style>
             <slot></slot>
-            <textarea data-role="input" spellcheck="false" wrap="off">${this.innerHTML}</textarea>
+            <textarea data-role="input" spellcheck="false" wrap="off">${this.rmIndent(this.innerHTML)}</textarea>
             <div data-role="lineNumber"></div>
 
         `;
@@ -189,8 +189,9 @@ class PyCellIn extends HTMLElement {
             borderRight: `solid 1px ${invCol}`,
         })
 
-        this.input.addEventListener("input", this.inputOninput.bind(this))
-        this.input.addEventListener("scroll", this.inputOnscroll.bind(this))
+        this.input.addEventListener("keydown", this.inputOnKeydown.bind(this));
+        this.input.addEventListener("input", this.inputOninput.bind(this));
+        this.input.addEventListener("scroll", this.inputOnscroll.bind(this));
 
         this.input.dispatchEvent(new Event("input"));
 
@@ -202,9 +203,105 @@ class PyCellIn extends HTMLElement {
         Object.entries(css).forEach(([prop, value]) => elm.style[prop] = value);
     }
 
+    rmIndent(org) {
+        const str = org.replaceAll('\t', '    ').replace(/\s+$/, '\n');
+        const ms = [...str.matchAll(/^(?<space> *).+/mg)];
+        let indent = Infinity;
+        for (let m of ms) {
+            if (m.groups.space.length < indent) indent = m.groups.space.length;
+        }
+
+        const re = new RegExp(`^ {${indent}}`, 'mg');
+        return str.replaceAll(re, '');
+    }
+
+    inputOnKeydown(e) {
+        // 改行時にインデントを引き継ぐ
+        if (e.key === "Enter") {
+            if (e.shiftKey) {
+                e.preventDefault();
+                this.dispatchEvent(new Event("execute"));
+            } else {
+                const target = e.target
+                // キー入力の挙動と衝突しないように0-timeout
+                setTimeout(() => {
+                    const position = target.selectionStart;
+                    const precedings = target.value.slice(0, position - 1);
+                    const lastLineHead = precedings.lastIndexOf('\n') + 1;
+
+                    let thisLineHead = '\n';
+                    let cnt = 0;
+                    while (precedings[lastLineHead + cnt] == ' ') cnt++, thisLineHead += " ";
+
+                    target.value = precedings + thisLineHead + target.value.substring(position);
+
+                    target.selectionStart = position + cnt;
+                    target.selectionEnd = position + cnt;
+                }, 0)
+            }
+        }
+        else if (e.key === "Tab") {
+            const TAB = "    ";
+            e.preventDefault();
+            if (e.shiftKey) {
+
+                const val = e.target.value;
+                const begin = e.target.selectionStart;
+                const end = e.target.selectionEnd;
+                // 行頭のposition
+                const lineHead = val.slice(0, begin).lastIndexOf("\n") + 1;
+
+                // 文頭からカーソル(または選択範囲の始まり)行直前の改行までを保持
+                const precedings = val.slice(0, lineHead);
+                // カーソル(または選択範囲の終わり)から文末までを保持
+                const followings = val.slice(end);
+                // 行頭からカーソルまで or  選択開始の行頭 ~ 選択開始 + 選択範囲
+                const target = val.slice(lineHead, end);
+
+                let pat = '';
+                for (let i = TAB.length; i > 0; i--) pat += `^ {${i}}|`;
+                const FirstIndentLength = target.match(new RegExp(pat + '| {0}'))[0].length;
+
+                const re = new RegExp(pat.slice(0, -1), 'mg');
+
+                e.target.value = precedings + target.replaceAll(re, '') + followings;
+
+                e.target.selectionStart = (begin - lineHead >= FirstIndentLength) ? begin - FirstIndentLength : lineHead;
+                e.target.selectionEnd = e.target.value.length - followings.length;
+
+
+            } else {
+                const begin = e.target.selectionStart;
+                const end = e.target.selectionEnd
+                const val = e.target.value;
+
+                if (begin === end) {
+                    e.target.value = val.slice(0, begin) + TAB + val.substring(begin);
+                    e.target.selectionEnd = begin + TAB.length;
+                } else {
+                    // 行頭のposition
+                    const lineHead = val.slice(0, begin).lastIndexOf("\n") + 1;
+
+                    // 文頭からカーソル(または選択範囲の始まり)行直前の改行までを保持
+                    const precedings = val.slice(0, lineHead);
+                    // カーソル(または選択範囲の終わり)から文末までを保持
+                    const followings = val.slice(end);
+                    // 行頭からカーソルまで or  選択開始の行頭 ~ 選択開始 + 選択範囲
+                    const target = val.slice(lineHead, end);
+
+                    e.target.value = precedings + target.replaceAll(/^/mg, TAB) + followings;
+
+                    e.target.selectionStart = begin + TAB.length;
+                    e.target.selectionEnd = e.target.value.length - followings.length;
+                }
+            }
+            e.target.dispatchEvent(new Event('input'));
+        }
+
+    }
+
     /**
      * pythonスクリプト入力欄の制御。以下の処理を実行する。
-     *  - 改行時にインデントを引き継ぐ
      *  - シンタックスハイライトを更新する
      *  - 入力欄とシンタックスハイライト表示領域の高さを更新する
      * 
@@ -215,21 +312,6 @@ class PyCellIn extends HTMLElement {
         const target = e.target
         // キー入力の挙動と衝突しないように0-timeout
         setTimeout(async () => {
-            // 改行時にインデントを引き継ぐ
-            if (e.inputType === "insertLineBreak") {
-                const position = target.selectionStart;
-                const precedings = target.value.slice(0, position - 1);
-                const lastLineHead = precedings.lastIndexOf('\n') + 1;
-
-                let thisLineHead = '\n';
-                let cnt = 0;
-                while (precedings[lastLineHead + cnt] == ' ') cnt++, thisLineHead += " ";
-
-                target.value = precedings + thisLineHead + target.value.substring(position);
-
-                target.selectionStart = position + cnt;
-                target.selectionEnd = position + cnt;
-            }
 
             this.code.innerHTML = target.value.replaceAll("<", "&lt;");
             hljs.highlightElement(this.code);
@@ -422,6 +504,7 @@ export class PyCell extends HTMLElement {
 
         // add EventListener
         this.btnRun.addEventListener("click", this.btnOnclick.bind(this))
+        this.input.addEventListener("execute", () => this.btnRun.dispatchEvent(new Event("click")))
 
         // initialize
         this.useWorker = ("useWorker" in this.dataset && this.dataset.useWorker !== "false");
