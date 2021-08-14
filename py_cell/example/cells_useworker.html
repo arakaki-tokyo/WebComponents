@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/vs2015.min.css" integrity="sha512-mtXspRdOWHCYp+f4c7CkWGYPPRAhq9X+xCvJMUBVAb6pqA4U8pxhT3RWT3LP3bKbiolYL2CkL1bSKZZO4eeTew==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script defer type='module'>
+        import * as pyodide from './pyodide/py_worker.mjs';
+        pyodide.load();
+        globalThis.pyodide = pyodide;
+
+        import { PyCell } from '../py_cell.mjs';
+        customElements.define("py-cell", PyCell);
+    </script>
+</head>
+
+<body>
+    <p>簡単な例</p>
+    <py-cell data-use-worker data-pyodide="pyodide.exec">
+for i in range(10):
+    print(i)
+    </py-cell>
+    <p>読み込み後即時実行する</p>
+    <py-cell data-execute data-use-worker data-pyodide="pyodide.exec">
+for i in range(10):
+  print(i)
+    </py-cell>
+
+</body>
+
+</html>

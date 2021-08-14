@@ -7,7 +7,7 @@ async function initPyodide({ isWorker, packages = [], sw, init = [] }) {
 
     const cells = document.querySelectorAll("py-cell");
     if (isWorker) {
-        const pyodide = await import("../pyodide/py_worker.mjs");
+        const pyodide = await import("./pyodide/py_worker.mjs");
         cells.forEach((cell) => {
             cell.setAttribute("data-use-worker", "ture");
             cell.setAttribute("data-pyodide", "pyodide.exec");
@@ -37,6 +37,6 @@ async function initPyodide({ isWorker, packages = [], sw, init = [] }) {
         });
     }
 
-    const { PyCell } = await import("../../py_cell.mjs");
+    const { PyCell } = await import("../py_cell.mjs");
     customElements.define("py-cell", PyCell);
 }

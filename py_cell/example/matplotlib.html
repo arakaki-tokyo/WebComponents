@@ -2,23 +2,16 @@
 <html>
 
 <head>
-    <!-- prism syntax highlighter -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/line-numbers/prism-line-numbers.min.css" integrity="sha512-cbQXwDFK7lj2Fqfkuxbo5iD1dSbLlJGXGpfTDqbggqjHJeyzx88I3rfwjS38WJag/ihH7lzuGlGHpDBymLirZQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js" integrity="sha512-axJX7DJduStuBB8ePC8ryGzacZPr3rdLaIDZitiEgWWk2gsXxEFlm4UW0iNzj2h3wp5mOylgHAzBzM4nRSvTZA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-python.min.js" integrity="sha512-nvWJ2DdGeQzxIYP5eo2mqC+kXLYlH4QZ/AWYZ/yDc5EqM74jiC5lxJ+8d+6zI/H9MlsIIjrJsaRTgLtvo+Jy6A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/line-numbers/prism-line-numbers.min.js" integrity="sha512-dubtf8xMHSQlExGRQ5R7toxHLgSDZ0K7AunqPWHXmJQ8XyVIG19S1T95gBxlAeGOK02P4Da2RTnQz0Za0H0ebQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script defer type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.3.3.min.js" integrity="sha384-dM3QQsP+wXdHg42wTqW85BjZQdLNNIXqlPw/BgKoExPmTG7ZLML4EGqLMfqHT6ON" crossorigin="anonymous"></script>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/vs2015.min.css" integrity="sha512-mtXspRdOWHCYp+f4c7CkWGYPPRAhq9X+xCvJMUBVAb6pqA4U8pxhT3RWT3LP3bKbiolYL2CkL1bSKZZO4eeTew==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script defer src="init_pyodide.js" onload='initPyodide({isWorker:true, packages:["pandas", "matplotlib", "bokeh"], init:["matplotlib"]})'></script>
 </head>
 
 <body>
-    <py-cell class="line-numbers" data-execute="false" data-pyodide="Pyodide">
+    <py-cell data-execute="false" data-pyodide="Pyodide">
 # if pyodide work in main thread, do this
 import os
 os.environ['MPLBACKEND'] = 'module://matplotlib.backends.html5_canvas_backend'</py-cell>
-    <py-cell class="line-numbers" data-execute="false" data-pyodide="Pyodide">
+    <py-cell data-execute="false" data-pyodide="Pyodide">
 # if pyodide work in worker thread, do this
 import base64
 import os
@@ -45,15 +38,15 @@ def ensure_matplotlib_patch():
     matplotlib.pyplot.show = show
 
 ensure_matplotlib_patch()</py-cell>
-    <py-cell class="line-numbers" data-execute="false" data-pyodide="Pyodide">
+    <py-cell data-line="false" data-execute="false" data-pyodide="Pyodide">
 import matplotlib.pyplot as plt
 import numpy as np</py-cell>
-    <py-cell class="line-numbers" data-pyodide="Pyodide">
+    <py-cell data-pyodide="Pyodide">
 from matplotlib import pyplot as plt
 plt.figure()
 plt.plot([1,2,3])
 plt.show()</py-cell>
-    <py-cell class="line-numbers" data-pyodide="Pyodide">
+    <py-cell data-pyodide="Pyodide">
 from matplotlib import font_manager as fm
 import os
 import json
@@ -67,7 +60,7 @@ fontlist_built = json.loads(json.dumps(fm.FontManager(), cls=fm._JSONEncoder))
 for list in ('afmlist', 'ttflist'):
 for fontlist in (fontlist_vendor, fontlist_built):
 fontlist[list].sort(key=lambda x: x['fname'])</py-cell>
-    <py-cell class="line-numbers" data-pyodide="Pyodide">
+    <py-cell data-pyodide="Pyodide">
 # test_rendering
 from matplotlib import pyplot as plt
 import numpy as np
@@ -78,7 +71,7 @@ plt.plot(t, s, linewidth=1.0, marker=11)
 plt.plot(t, t)
 plt.grid(True)
 plt.show()</py-cell>
-    <py-cell class="line-numbers" data-pyodide="Pyodide">
+    <py-cell data-pyodide="Pyodide">
 # test_draw_image
 import numpy as np
 import matplotlib.cm as cm
@@ -97,7 +90,7 @@ plt.imshow(Z, interpolation='bilinear', cmap=cm.RdYlGn,
 origin='lower', extent=[-3, 3, -3, 3],
 vmax=abs(Z).max(), vmin=-abs(Z).max())
 plt.show()</py-cell>
-    <py-cell class="line-numbers" data-pyodide="Pyodide">
+    <py-cell data-pyodide="Pyodide">
 # test_draw_image_affine_transform
 import numpy as np
 import matplotlib.pyplot as plt
@@ -138,7 +131,7 @@ do_plot(ax3, Z, mtransforms.Affine2D().scale(-1, .5))
 do_plot(ax4, Z, mtransforms.Affine2D().
 rotate_deg(30).skew_deg(30, 15).scale(-1, .5).translate(.5, -1))
 plt.show()</py-cell>
-    <py-cell class="line-numbers" data-pyodide="Pyodide">
+    <py-cell data-pyodide="Pyodide">
 # test_draw_text_rotated
 import matplotlib.pyplot as plt
 from matplotlib.dates import (
@@ -164,7 +157,7 @@ ax.xaxis.set_major_formatter(formatter)
 labels = ax.get_xticklabels()
 plt.setp(labels, rotation=30, fontsize=10)
 plt.show()</py-cell>
-    <py-cell class="line-numbers" data-pyodide="Pyodide">
+    <py-cell data-pyodide="Pyodide">
 # test_draw_math_text
 
 import matplotlib.pyplot as plt

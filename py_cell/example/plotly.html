@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/vs2015.min.css" integrity="sha512-mtXspRdOWHCYp+f4c7CkWGYPPRAhq9X+xCvJMUBVAb6pqA4U8pxhT3RWT3LP3bKbiolYL2CkL1bSKZZO4eeTew==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script defer src="init_pyodide.js" onload='initPyodide({isWorker:true, packages:["micropip", "statsmodels", "pandas"], init:["webbrowser"]})'></script>
+
+</head>
+
+<body>
+    <py-cell data-execute="false" data-pyodide="Pyodide">
+import micropip
+micropip.install('plotly==5.0.0')</py-cell>
+    <py-cell data-execute="false" data-pyodide="Pyodide">
+# スクリプトの最後にFigureオブジェクトを評価する際に必要
+import webbrowser
+webbrowser.get = lambda:None
+    </py-cell>
+    <py-cell data-execute="false" data-pyodide="Pyodide">
+import plotly.express as px
+xs = range(-30, 30)
+ys = list(map(lambda x: x**3, xs))
+fig1 = px.scatter(x=xs, y=ys)
+fig1.update_layout(
+margin={'l':10, 'r':20, 'b':10, 't':20,'pad':0}
+)
+fig1
+    </py-cell>
+    <p>描画の設定を追加</p>
+    <a href="https://plotly.com/python/configuration-options/">Configuration | Python | Plotly</a>
+    <py-cell data-execute="false" data-pyodide="Pyodide">
+fig1.to_html(config={'scrollZoom': True})
+    </py-cell>
+    <py-cell data-execute="false" data-pyodide="Pyodide"></py-cell>
+
+</body>
+
+</html>
