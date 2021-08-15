@@ -28,34 +28,34 @@
         }`
         // for matplotlib html5_canvas_backend v.0.18.0
         + `
-        py-cell-out .fa::after{
+        py-cell-out .fa::before{
             display: inline-block;
             height: 1rem;
             width: 1rem;
             background: #495057;
             transition-duration: 0.4s;
         }
-        py-cell-out .fa:hover::after{
+        py-cell-out .fa:hover::before{
             background: #fff;
         }
         
-        py-cell-out .fa-home::after {
+        py-cell-out .fa-home::before {
             content: "";
             clip-path: url(#fa-home);
         }
-        py-cell-out .fa-arrow-left::after {
+        py-cell-out .fa-arrow-left::before {
             content: "";
             clip-path: url(#fa-arrow-left);
         }
-        py-cell-out .fa-search-plus::after {
+        py-cell-out .fa-search-plus::before {
             content: "";
             clip-path: url(#fa-search-plus);
         }
-        py-cell-out .fa-arrows::after {
+        py-cell-out .fa-arrows::before {
             content: "";
             clip-path: url(#fa-arrows);
         }
-        py-cell-out .fa-arrow-right::after {
+        py-cell-out .fa-arrow-right::before {
             content: "";
             clip-path: url(#fa-arrow-right);
         }
