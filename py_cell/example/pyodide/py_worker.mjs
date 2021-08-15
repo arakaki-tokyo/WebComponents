@@ -10,7 +10,6 @@ export async function exec(code) {
         pyodideWorker.onmessage = e => {
             if (e.data.error) {
                 reject(e.data.error);
-                jobs = Promise.resolve()
             } else {
                 resolve(e.data);
             }
