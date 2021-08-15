@@ -100,8 +100,14 @@ async function exec({ code }) {
         sys.stdout = out;
 
         let results = await pyodide.runPythonAsync(code);
-        if (pyodide.isPyProxy(results) && "_repr_html_" in results) {
-            results = results._repr_html_();
+        if (pyodide.isPyProxy(results)) {
+            if ("_repr_html_" in results) {
+                results = results._repr_html_()
+            } else if ("__repr__" in results) {
+                results = results.__repr__().replaceAll('<', '&lt;')
+            } else {
+                results = results;
+            }
         }
         self.postMessage({
             results: results ? String(results) : "",

@@ -559,11 +559,15 @@ export class PyCell extends HTMLElement {
                     sys.destroy();
 
                     if (results !== undefined) {
-                        if (pyodide.isPyProxy(results) && "_repr_html_" in results) {
-                            this.out.appendChild(this.strToElm(results._repr_html_()));
-                        } else {
-                            this.out.appendChild(this.strToElm(results));
+                        let resultsStr = results;
+                        if (pyodide.isPyProxy(results)) {
+                            if ("_repr_html_" in results) {
+                                resultsStr = results._repr_html_()
+                            } else if ("__repr__" in results) {
+                                resultsStr = results.__repr__().replaceAll('<', '&lt;')
+                            }
                         }
+                        this.out.appendChild(this.strToElm(String(resultsStr)));
                     }
                     if (document.body.lastElementChild.id.startsWith("matplotlib")) {
                         this.out.appendChild(document.body.lastElementChild);
