@@ -115,9 +115,8 @@ async function exec({ code }) {
         });
     }
     catch (error) {
-        console.dir(error)
         self.postMessage(
-            { error }
+            { error: String(error) }
         );
     }
 }
