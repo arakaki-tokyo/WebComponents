@@ -28,34 +28,34 @@
         }`
         // for matplotlib html5_canvas_backend v.0.18.0
         + `
-        py-cell-out .fa::after{
+        py-cell-out .fa::before{
             display: inline-block;
             height: 1rem;
             width: 1rem;
             background: #495057;
             transition-duration: 0.4s;
         }
-        py-cell-out .fa:hover::after{
+        py-cell-out .fa:hover::before{
             background: #fff;
         }
         
-        py-cell-out .fa-home::after {
+        py-cell-out .fa-home::before {
             content: "";
             clip-path: url(#fa-home);
         }
-        py-cell-out .fa-arrow-left::after {
+        py-cell-out .fa-arrow-left::before {
             content: "";
             clip-path: url(#fa-arrow-left);
         }
-        py-cell-out .fa-search-plus::after {
+        py-cell-out .fa-search-plus::before {
             content: "";
             clip-path: url(#fa-search-plus);
         }
-        py-cell-out .fa-arrows::after {
+        py-cell-out .fa-arrows::before {
             content: "";
             clip-path: url(#fa-arrows);
         }
-        py-cell-out .fa-arrow-right::after {
+        py-cell-out .fa-arrow-right::before {
             content: "";
             clip-path: url(#fa-arrow-right);
         }
@@ -105,6 +105,10 @@ class PyCellIn extends HTMLElement {
                     display: none !important;
                 }
 
+                :host([no-highlight]) slot {
+                    display: none !important;
+                }
+
                 [data-role="lineNumber"] {
                     counter-reset: line;
                     position: absolute;
@@ -141,13 +145,15 @@ class PyCellIn extends HTMLElement {
         });
 
         this.innerHTML = `
-            <pre style="box-sizing:border-box;"><code class="lang-py" data-role="code"></code></pre>
+            <pre style="box-sizing:border-box; margin: 0;"><code class="lang-py" data-role="code"></code></pre>
         `
         this.querySelectorAll("[data-role]").forEach(elm => {
             this[elm.dataset.role] = elm;
         });
 
-        hljs.highlightElement(this.code);
+        this.doHighLight = !this.hasAttribute('no-highlight');
+
+        if (this.doHighLight) hljs.highlightElement(this.code);
 
         const commonCSS = {
             fontFamily: "Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace",
@@ -162,18 +168,20 @@ class PyCellIn extends HTMLElement {
         this.applyStyles(this.code, commonCSS);
         this.applyStyles(this.input, commonCSS);
 
-        const invCol = this.getInvCol(getComputedStyle(this.code).backgroundColor);
+        const invCol = this.doHighLight ?
+            this.getInvCol(getComputedStyle(this.code).backgroundColor) :
+            'black';
 
         this.applyStyles(this.input, {
             display: "block",
             resize: "none",
-            position: "absolute",
+            position: this.doHighLight ? "absolute" : "initial",
             top: 0,
             left: 0,
             boxSizing: "border-box",
             width: "100%",
-            background: "transparent",
-            color: "transparent",
+            background: this.doHighLight ? "transparent" : "snow",
+            color: this.doHighLight ? "transparent" : "initial",
             caretColor: invCol,
             border: "none",
             overflowY: "hidden",
@@ -309,16 +317,12 @@ class PyCellIn extends HTMLElement {
      * @memberof PyCell
      */
     inputOninput(e) {
-        const target = e.target
-        // キー入力の挙動と衝突しないように0-timeout
-        setTimeout(async () => {
-
-            this.code.innerHTML = target.value.replaceAll("<", "&lt;");
+        if (this.doHighLight) {
+            this.code.innerHTML = e.target.value.replaceAll("<", "&lt;");
             hljs.highlightElement(this.code);
-
-            // 高さ計算
-            this.calcHeight();
-        }, 0)
+        }
+        // 高さ計算
+        this.calcHeight();
     }
 
     calcHeight() {
@@ -454,7 +458,10 @@ export class PyCell extends HTMLElement {
     connectedCallback() {
         this.style.display = "block";
         this.innerHTML = `
-            <py-cell-in data-role="input" ${this.dataset.line === "false" ? 'no-line' : ''}>${this.innerHTML}</py-cell-in>
+            <py-cell-in data-role="input" 
+                ${this.dataset.line === "false" ? 'no-line' : ''}
+                ${this.dataset.highlight === "false" ? 'no-highlight' : ''}
+            >${this.innerHTML}</py-cell-in>
             <div style="display:flex; flex-direction: column;">
                 <div style="display: flex; justify-content: space-between;">
                     <div data-role="executed"></div>
@@ -555,6 +562,7 @@ export class PyCell extends HTMLElement {
                     const sys = pyodide.globals.get('sys');
                     sys.stdout = this;
 
+                    await pyodide.loadPackagesFromImports(this.input.value);
                     const results = await pyodide.runPythonAsync(this.input.value);
                     sys.destroy();
 
