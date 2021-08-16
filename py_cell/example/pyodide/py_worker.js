@@ -99,6 +99,7 @@ async function exec({ code }) {
         const out = new OutBuffer()
         sys.stdout = out;
 
+        await pyodide.loadPackagesFromImports(code);
         let results = await pyodide.runPythonAsync(code);
         if (pyodide.isPyProxy(results)) {
             if ("_repr_html_" in results) {

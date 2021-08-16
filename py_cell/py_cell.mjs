@@ -562,6 +562,7 @@ export class PyCell extends HTMLElement {
                     const sys = pyodide.globals.get('sys');
                     sys.stdout = this;
 
+                    await pyodide.loadPackagesFromImports(this.input.value);
                     const results = await pyodide.runPythonAsync(this.input.value);
                     sys.destroy();
 
