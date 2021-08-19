@@ -106,8 +106,6 @@ async function exec({ code }) {
                 results = results._repr_html_()
             } else if ("__repr__" in results) {
                 results = results.__repr__().replaceAll('<', '&lt;')
-            } else {
-                results = results;
             }
         }
         self.postMessage({
