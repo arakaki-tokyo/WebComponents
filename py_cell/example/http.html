@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/vs2015.min.css" integrity="sha512-mtXspRdOWHCYp+f4c7CkWGYPPRAhq9X+xCvJMUBVAb6pqA4U8pxhT3RWT3LP3bKbiolYL2CkL1bSKZZO4eeTew==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script defer src="init_pyodide.js" onload='initPyodide({isWorker:false, packages:["micropip", "pandas"], init:["webbrowser"]})'></script>
+
+</head>
+
+<body>
+    
+    <div>
+        <p>これはオッケー</p>
+        <py-cell data-pyodide='Pyodide'>
+            import pyodide
+            import pandas as pd
+            iris_url = 'https://raw.githubusercontent.com/plotly/datasets/master/iris.csv'
+            pd.read_csv(pyodide.open_url(iris_url))
+        </py-cell>
+        <p>これはNG</p>
+        <py-cell data-pyodide='Pyodide'>
+            earthquake_url = 'https://raw.githubusercontent.com/plotly/datasets/master/earthquake.csv'
+            pyodide.open_url(earthquake_url)
+        </py-cell>
+        <p>これもNG。しかもrunPythonAsyncで実行した場合エラーをキャッチできない</p>
+        <py-cell data-pyodide='Pyodide'>
+            earthquake_url = 'https://raw.githubusercontent.com/plotly/datasets/master/earthquake.csv'
+            import js
+            await js.Function(f'''
+            return fetch("{earthquake_url }").then(res => res.text()).then(text => globalThis.text = text)
+            ''')()
+        </py-cell>
+        <p>これもNG</p>
+        <py-cell data-pyodide='Pyodide'>
+            earthquake_url = 'https://raw.githubusercontent.com/plotly/datasets/master/earthquake.csv'
+            import js
+            js.Function(f'''
+            fetch("{earthquake_url }").then(res => res.text()).then(text => globalThis.text = text)
+            ''')()
+        </py-cell>
+        <py-cell data-pyodide='Pyodide'>
+            js.text
+        </py-cell>
+        <p>回避策</p>
+        <py-cell data-pyodide='Pyodide'>
+            async def urlopen2(url):
+                import js
+                import io
+                await js.Function(f'''
+                    return fetch("{url}")
+                    .then(res => res.text())
+                    .then(text => {{
+                        globalThis.resBody = Int16Array.from(text, char => char.charCodeAt(0))
+                    }})
+                ''')()
+                return io.StringIO(js.resBody.to_py().tobytes().decode('utf-16'))
+        </py-cell>
+        <py-cell data-pyodide='Pyodide'>
+            res = await urlopen2(earthquake_url)
+            pd.read_csv(res)
+        </py-cell>
+        
+    </div>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+
+</body>
+
+</html>
