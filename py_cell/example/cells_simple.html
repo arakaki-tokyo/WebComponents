@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css" integrity="sha512-3xLMEigMNYLDJLAgaGlDSxpGykyb+nQnJBzbkQy2a0gyVKL2ZpNOPIj1rD8IPFaJbwAgId/atho1+LBpWu5DhA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- pyodide -->
+    <script defer id="pyodideJs" src="https://cdn.jsdelivr.net/pyodide/v0.18.0/full/pyodide.js"></script>
+    <script>
+        document.getElementById("pyodideJs").onload = async e => {
+            window.pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.18.0/full/' });
+        }
+    </script>
+    <script type='module'>
+        import { PyCell } from '../py_cell.mjs';
+        customElements.define("py-cell", PyCell);
+    </script>
+</head>
+
+<body>
+    <py-cell>
+        for i in range(10):
+            print(i)
+    </py-cell>
+    <p>読み込み後即時実行する</p>
+    <py-cell data-execute>
+        for i in range(10):
+            print(i)
+    </py-cell>
+
+</body>
+
+</html>

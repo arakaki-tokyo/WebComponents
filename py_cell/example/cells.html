@@ -2,36 +2,59 @@
 <html>
 
 <head>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/vs2015.min.css" integrity="sha512-mtXspRdOWHCYp+f4c7CkWGYPPRAhq9X+xCvJMUBVAb6pqA4U8pxhT3RWT3LP3bKbiolYL2CkL1bSKZZO4eeTew==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css" integrity="sha512-3xLMEigMNYLDJLAgaGlDSxpGykyb+nQnJBzbkQy2a0gyVKL2ZpNOPIj1rD8IPFaJbwAgId/atho1+LBpWu5DhA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- pyodide -->
     <script defer id="pyodideJs" src="https://cdn.jsdelivr.net/pyodide/v0.18.0/full/pyodide.js"></script>
-    <script defer>
+    <script>
         const Pyodide = new Promise((resolve, reject) => {
             document.getElementById("pyodideJs").onload = async e => {
                 window.pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.18.0/full/' });
-                // pyodide.loadPackage(['pandas', 'plotly']);
                 resolve(pyodide);
             }
         })
     </script>
-    <script defer type='module'>
+    <script type='module'>
         import { PyCell } from '../py_cell.mjs';
         customElements.define("py-cell", PyCell);
     </script>
 </head>
 
 <body>
-    <p>簡単な例</p>
-    <py-cell>
-for i in range(10):
-    print(i)
-    </py-cell>
-    <p>読み込み後即時実行する</p>
-    <py-cell  data-execute data-pyodide="Pyodide">
-for i in range(10):
-  print(i)
-    </py-cell>
-
+    <div>
+        <p>シンタックスハイライトあり・ラインナンバーあり(デフォルト)</p>
+        <py-cell>
+            for i in range(10):
+                print(i)
+        </py-cell>
+    </div>
+    <div>
+        <p>シンタックスハイライトなし・ラインナンバーあり</p>
+        <py-cell data-highlight="false">
+            for i in range(10):
+                print(i)
+        </py-cell>
+    </div>
+    <div>
+        <p>シンタックスハイライトなし・ラインナンバーなし</p>
+        <py-cell data-line="false" data-highlight="false">
+            for i in range(10):
+                print(i)
+        </py-cell>
+    </div>
+    <div>
+        <p>シンタックスハイライトあり・ラインナンバーなし</p>
+        <py-cell data-line="false">
+            for i in range(10):
+                print(i)
+        </py-cell>
+    </div>
+    <div>
+        <p>読み込み後即時実行する</p>
+        <py-cell data-execute data-pyodide='Pyodide'>
+            for i in range(10):
+                print(i)
+        </py-cell>
+    </div>
 </body>
 
 </html>

@@ -231,21 +231,21 @@ class PyCellIn extends HTMLElement {
                 this.dispatchEvent(new Event("execute"));
             } else {
                 const target = e.target
-                // キー入力の挙動と衝突しないように0-timeout
-                setTimeout(() => {
-                    const position = target.selectionStart;
-                    const precedings = target.value.slice(0, position - 1);
-                    const lastLineHead = precedings.lastIndexOf('\n') + 1;
+                const begin = target.selectionStart;
+                const end = target.selectionEnd;
+                const precedings = target.value.slice(0, begin);
+                const lastLineHead = precedings.lastIndexOf('\n') + 1;
 
-                    let thisLineHead = '\n';
-                    let cnt = 0;
-                    while (precedings[lastLineHead + cnt] == ' ') cnt++, thisLineHead += " ";
+                let thisLineHead = '';
+                let cnt = 0;
+                while (precedings[lastLineHead + cnt] == ' ') cnt++, thisLineHead += " ";
 
-                    target.value = precedings + thisLineHead + target.value.substring(position);
+                target.value = target.value.slice(0, end) + thisLineHead + target.value.substring(end);
 
-                    target.selectionStart = position + cnt;
-                    target.selectionEnd = position + cnt;
-                }, 0)
+                target.selectionStart = begin;
+                target.selectionEnd = end;
+                // 改行が挿入された後にカーソルを戻す
+                setTimeout(() => { target.selectionStart = target.selectionEnd = begin + cnt + 1 }, 0)
             }
         }
         else if (e.key === "Tab") {
