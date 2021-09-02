@@ -359,16 +359,11 @@ export class PopCom extends HTMLElement {
 
     }
     drawGrid() {
-        function myRenderer(instance, td, row, col, prop, value, cellProperties) {
+        function numRenderer(instance, td, row, col, prop, value, cellProperties) {
             Handsontable.renderers.NumericRenderer.apply(this, arguments);
 
-            // 同年の総数から比率を計算
-            const idx = this.total.index.findIndex(i => i === `${instance.getDataAtCell(row, this.columns.pref)}_総数`);
-            const totalOfYear = this.total.data[idx][col];
-            td.innerHTML += `<small>(${Math.round(value * 1000 / totalOfYear) / 10}%)</small>`;
-
             // 同グループの2020年と比較して増減を背景色で表現
-            const current = instance.getDataAtCell(row, 3);
+            const current = instance.getDataAtCell(row, this.columns["2020"]);
             const diff = 1 - value / current;
             if (diff < 0) {
                 td.style.background = `hsla(180, 100%, 50%, ${Math.abs(diff)})`
@@ -376,7 +371,21 @@ export class PopCom extends HTMLElement {
                 td.style.background = `hsla(0, 100%, 50%, ${diff})`
             }
         }
-        Handsontable.renderers.registerRenderer('myRenderer', myRenderer.bind(this));
+        Handsontable.renderers.registerRenderer('numRenderer', numRenderer.bind(this));
+
+        function ratioRenderer(instance, td, row, col, prop, value, cellProperties) {
+            Handsontable.renderers.NumericRenderer.apply(this, arguments);
+
+            // 同グループの2020年と比較して増減を背景色で表現
+            const current = instance.getDataAtCell(row, this.columns["2020"] + this.yearList.length);
+            const diff = 1 - value / current;
+            if (diff < 0) {
+                td.style.background = `hsla(180, 100%, 50%, ${Math.abs(diff)})`
+            } else if (diff > 0) {
+                td.style.background = `hsla(0, 100%, 50%, ${diff})`
+            }
+        }
+        Handsontable.renderers.registerRenderer('ratioRenderer', ratioRenderer.bind(this));
 
         const columns = [
             { data: `${this.columns.pref}` },
@@ -392,19 +401,42 @@ export class PopCom extends HTMLElement {
                             mantissa: 0
                         },
                     },
-                    renderer: 'myRenderer'
+                    renderer: 'numRenderer'
+                }
+            }),
+            ...this.yearList.map((y, i) => {
+                return {
+                    data: `${this.columns[`${y}r`]}`,
+                    type: 'numeric',
+                    numericFormat: {
+                        pattern: {
+                            output: 'percent',
+                            mantissa: 1
+                        },
+                    },
+                    renderer: 'ratioRenderer'
                 }
             }),
         ];
+
+        const yearHeaderTmpl = { colspan: this.yearList.length };
         const hot = new Handsontable(this.gridContainer, {
             readOnly: true,
             data: this.total.data,
             rowHeaders: true,
-            colHeaders: ['', "都道府県", "年齢階級", ...this.yearList],
+            nestedHeaders: [
+                ['', { colspan: 2, label: "" }, Object.assign({ label: '人口' }, yearHeaderTmpl), Object.assign({ label: '比率' }, yearHeaderTmpl)],
+                ['', "都道府県", "年齢階級", ...this.yearList, ...this.yearList]
+            ],
+            collapsibleColumns: [
+                { row: -2, col: 3, collapsible: true },
+                { row: -2, col: 10, collapsible: true }
+            ],
             hiddenColumns: {
                 // 1列目の都道府県コードは非表示。rendererで総数を検索する際に使用する。
                 columns: [0],
             },
+            fixedColumnsLeft: 3,
             height: 600,
             dropdownMenu: [
                 "filter_by_value",
