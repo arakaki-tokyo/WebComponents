@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type='module'>
+            import {PopCom} from '../population.mjs';
+            customElements.define('pop-com', PopCom)
+        </script>
+    </head>
+    <body>
+        <pop-com data-url="https://data.arakaki.tokyo/static/jinko_suikei_2018/total.json" data-init="00"></pop-com>
+    </body>
+</html>
