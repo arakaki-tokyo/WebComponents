@@ -1,3 +1,21 @@
+const plotlyLib = {
+    label: 'Plotly',
+    src: "https://cdn.plot.ly/plotly-2.3.1.min.js"
+};
+const handsontableLib = {
+    label: 'Handsontable',
+    src: "https://cdn.jsdelivr.net/npm/handsontable@9.0.2/dist/handsontable.full.min.js",
+    css: ["https://cdn.jsdelivr.net/npm/handsontable@9.0.2/dist/handsontable.full.min.css"]
+};
+
+function fa_undo(strings) {
+    return `
+    <svg ${strings[0]} viewBox="0 0 32 32">
+        <path d="M23.808 32c3.554-6.439 4.153-16.26-9.808-15.932v7.932l-12-12 12-12v7.762c16.718-0.436 18.58 14.757 9.808 24.238z"></path>
+    </svg>
+    `
+}
+
 export class PopPrj extends HTMLElement {
     url = "https://data.arakaki.tokyo";
     dfPath = "/static/jinko_suikei_2018/df";
@@ -14,21 +32,35 @@ export class PopPrj extends HTMLElement {
 
     constructor() {
         super();
-        if ('Plotly' in globalThis) {
-            this.plotlyLoad = Promise.resolve();
-        } else {
-            const plotlyLib = document.createElement('script');
-            plotlyLib.src = "https://cdn.plot.ly/plotly-2.3.1.min.js";
-            this.plotlyLoad = new Promise(resolve => {
-                plotlyLib.onload = () => resolve();
-            });
-            document.head.appendChild(plotlyLib);
-        }
+        this.loadLibs(plotlyLib);
         customElements.define('pop-com', PopCom);
     }
     applyStyle(elm, style) {
         Object.entries(style).forEach(([prop, value]) => elm.style[prop] = value);
     }
+
+    loadLibs(info) {
+        if (info.label in globalThis) {
+            this[`${info.label}`] = Promise.resolve();
+        } else {
+            const lib = document.createElement('script');
+            lib.src = info.src;
+            this[`${info.label}`] = new Promise(resolve => {
+                lib.onload = () => resolve();
+            });
+            document.head.appendChild(lib);
+
+            if (info.css) {
+                info.css.forEach(url => {
+                    const link = document.createElement('link');
+                    link.rel = "stylesheet";
+                    link.href = url;
+                    document.head.appendChild(link);
+                })
+            }
+        }
+    }
+
     async connectedCallback() {
         this.applyStyle(this, {
             display: 'block',
@@ -49,8 +81,10 @@ export class PopPrj extends HTMLElement {
             <div style="position: relative; margin-right: 10px; margin-bottom: 30px;">
                 <div data-role="mapContainer" style='margin-right: 20px'></div>
                 <div data-role="colorScaleRange">
-                    <button data-role="undoBtn" style="transform: rotate(90deg);border-radius: 50%;border: solid 1px gray;">↩️</button>
-                    <input type="range" min="0" max="100" value="100" style="flex-grow: 2;">
+                <button data-role="undoBtn" style="transform: rotate(90deg); height: 18px">
+                    ${fa_undo`width=12 height=12 fill="#333"`}
+                </button>
+            <input type="range" min="0" max="100" value="100" style="flex-grow: 2;">
                 </div>
             </div>
             <pop-com data-role="popCom" data-url="${this.totalUrl}" data-init="${this.initPrefCode}"></pop-com>
@@ -273,37 +307,34 @@ export class PopPrj extends HTMLElement {
         const config = {
             responsive: true,
         };
-        await this.plotlyLoad;
+        await this[plotlyLib.label];
         Plotly.react(elm, [map], layout, config);
     }
 }
-export class PopCom extends HTMLElement {
-    totalUrl;
+
+export class PopPrjPref extends HTMLElement {
+    url = "https://data.arakaki.tokyo";
+    totalUrl = `${this.url}/static/jinko_suikei_2018/total.json`;
+    geoUrl = `${this.url}/static/pref_hex.geo.json`
+    #zmax = [];
+    vars = { year: '2020', group: '総数', numOrRatio: '' }
 
     constructor() {
         super();
-        const libs = [
-            {
-                label: 'Plotly',
-                src: "https://cdn.plot.ly/plotly-2.3.1.min.js"
-            },
-            {
-                label: 'Handsontable',
-                src: "https://cdn.jsdelivr.net/npm/handsontable@9.0.2/dist/handsontable.full.min.js",
-                css: ["https://cdn.jsdelivr.net/npm/handsontable@9.0.2/dist/handsontable.full.min.css"]
-            }
-        ];
-
-        libs.forEach(this.loadLibs.bind(this));
+        this.loadLibs(plotlyLib);
+        customElements.define('pop-com', PopCom);
+    }
+    applyStyle(elm, style) {
+        Object.entries(style).forEach(([prop, value]) => elm.style[prop] = value);
     }
 
     loadLibs(info) {
         if (info.label in globalThis) {
-            this[`${info.label}Load`] = Promise.resolve();
+            this[`${info.label}`] = Promise.resolve();
         } else {
             const lib = document.createElement('script');
             lib.src = info.src;
-            this[`${info.label}Load`] = new Promise(resolve => {
+            this[`${info.label}`] = new Promise(resolve => {
                 lib.onload = () => resolve();
             });
             document.head.appendChild(lib);
@@ -318,6 +349,263 @@ export class PopCom extends HTMLElement {
             }
         }
     }
+
+    async connectedCallback() {
+        this.applyStyle(this, {
+            display: 'block',
+            margin: '1rem',
+        });
+
+        /** get data */
+        await Promise.all([
+            fetch(this.totalUrl).then((res) => res.json()).then(j => this.total = j)
+        ]);
+        this.columns = this.total.columns.reduce((acc, val, idx) => { acc[val] = idx; return acc }, {});
+
+        this.innerHTML = `
+            <div style="position: relative; margin-right: 10px; margin-bottom: 30px;">
+                <div data-role="mapContainer" style='margin-right: 20px'></div>
+                <div data-role="colorScaleRange">
+                    <button data-role="undoBtn" style="transform: rotate(90deg); height: 18px">
+                        ${fa_undo`width=12 height=12 fill="#333"`}
+                    </button>
+                    <input type="range" min="1" max="100" value="100" style="flex-grow: 2;">
+                </div>
+            </div>
+            <pop-com data-role="popCom" data-init="00"></pop-com>
+        `;
+
+        this.querySelectorAll("[data-role]").forEach(
+            (elm) => (this[elm.dataset.role] = elm)
+        );
+
+        this.applyStyle(this.colorScaleRange, {
+            width: "430px",
+            display: "flex",
+            position: "absolute",
+            top: "30px",
+            right: "0",
+            transform: "rotate(-90deg)",
+            transformOrigin: "center right",
+        })
+
+        // color scale change
+        this.colorScaleRange.addEventListener("input", (e) => {
+            Plotly.restyle(
+                this.mapContainer,
+                { zmax: this.zmin + (this.zmax - this.zmin) * 0.01 * Number(e.target.value) },
+            );
+        });
+        this.colorScaleRange.addEventListener("change", (e) => {
+            this.zmax = this.zmin + (this.zmax - this.zmin) * 0.01 * Number(e.target.value);
+            e.target.value = 100;
+        });
+        this.undoBtn.onclick = (e) => {
+            if (this.#zmax.length <= 1) return;
+            this.#zmax.pop();
+            Plotly.restyle(this.mapContainer, { zmax: this.zmax }, 0);
+        };
+
+        await this.initPlot();
+
+        this.mapContainer.on('plotly_buttonclicked', this.updatePlot.bind(this));
+        this.mapContainer.on('plotly_selected', this.mapSelected.bind(this));
+        this.mapContainer.on('plotly_click', this.prefClick.bind(this));
+        this.mapContainer.on('plotly_doubleclick', this.prefDblClick.bind(this));
+
+        this.popCom.total = this.total;
+    }
+
+    prefClick(e) {
+        console.log(e)
+        this.popCom.plot(e.points[0].location);
+    }
+
+    prefDblClick(e) {
+        this.popCom.plot("00");
+    }
+
+    mapSelected(e) {
+        console.log(e)
+        const layout = {};
+        if (e) {
+            const sum = e.points.reduce((acc, cur) => acc + cur.z, 0);
+            layout.annotations = [{
+                x: 1,
+                y: 0,
+                text: `${Math.floor(sum).toLocaleString()}人`,
+                showarrow: false,
+                bgcolor: 'rgba(0,0,0,0.5)',
+                font: { color: 'white' }
+            }]
+        } else {
+            layout.annotations = []
+        }
+
+        Plotly.relayout(this.mapContainer, layout)
+    }
+
+    updatePlot(e) {
+        const data = {};
+        if (e.menu.name === 'numOrRatio') {
+            this.vars.numOrRatio = e.menu.active;
+            if (this.vars.numOrRatio) {
+                data.hovertemplate = '%{z:.1%} <extra>%{properties.name}</extra>';
+            } else {
+                data.hovertemplate = '%{z:,d} <extra>%{properties.name}</extra>';
+            }
+        } else {
+            this.vars[e.menu.name] = e.button.label;
+        }
+
+        const c = this.columns[`${this.vars.numOrRatio ? `${this.vars.year}r` : this.vars.year}`];
+        data.z = [this.total.data
+            .filter(r => r[this.columns.pref] !== "00" && r[this.columns.group] === this.vars.group)
+            .map(r => r[c])
+        ];
+
+        if (e.menu.name !== 'year') {
+            this.#zmax = [];
+            this.zmax = data.zmax = Math.max(...data.z[0]) * 1.1;
+            this.zmin = data.zmin = Math.min(...data.z[0]) * 0.9;
+        }
+
+        Plotly.restyle(this.mapContainer, data);
+    }
+
+    async initPlot() {
+        const sosu = this.total.data
+            .filter(r => r[this.columns.pref] !== "00")
+            .filter(r => r[this.columns.group] === "総数");
+
+        const map = {
+            type: "choroplethmapbox",
+            featureidkey: "id",
+            locations: sosu.map(r => r[this.columns.pref]),
+            z: sosu.map(r => r[this.columns["2020"]]),
+            geojson: this.geoUrl,
+            hovertemplate: '%{z:,d} <extra>%{properties.name}</extra>',
+            marker: {
+                line: { width: 0 },
+                opacity: 0.5,
+            },
+            colorscale: "Jet",
+        };
+        this.zmax = map.zmax = Math.max(...map.z) * 1.1;
+        this.zmin = map.zmin = Math.min(...map.z) * 0.9;
+        const layout = {
+            mapbox: {
+                style: "white-bg",
+                center: { lon: 137.37, lat: 38.5 },
+                zoom: 4,
+                layers: [
+                    {
+                        sourcetype: 'image',
+                        color: '#F00',
+                        source: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mOcPWvWfwAGdwLQpoInnAAAAABJRU5ErkJggg==',
+                        coordinates: [[90, 50], [200, 50], [200, 20], [90, 20]],
+                        below: "traces",
+
+                    }
+                ],
+
+            },
+            updatemenus: [
+                {
+                    name: 'numOrRatio',
+                    buttons: [
+                        {
+                            method: "skip",
+                            label: "実数(人)",
+                        },
+                        {
+                            method: "skip",
+                            label: "比率(%)",
+                        },
+                    ],
+                    direction: "bottom",
+                    type: "buttons",
+                    xanchor: "right",
+                    x: -0.01,
+                },
+                {
+                    name: 'year',
+                    buttons: this.total.columns.filter(c => !Number.isNaN(Number(c)))
+                        .map(y => { return { method: 'skip', label: y } }),
+                    direction: 'right',
+                    type: 'buttons',
+                    yanchor: 'bottom',
+                    y: 1.01,
+                    xanchor: "left",
+                    x: 0.01
+                },
+                {
+                    name: 'group',
+                    buttons: this.total.data
+                        .filter(r => r[this.columns.pref] == '00')
+                        .map(r => { return { method: 'skip', label: r[this.columns.group] } }),
+                    xanchor: "right",
+                    x: 0,
+                    yanchor: 'bottom',
+                    y: 1.01,
+                    active: 0
+                },
+            ],
+            margin: { r: 0, t: 0, b: 0, l: 0 },
+        };
+
+
+
+        const config = {
+            responsive: true,
+        };
+
+        await this[plotlyLib.label];
+        Plotly.react(this.mapContainer, [map], layout, config);
+    }
+    set zmax(val) {
+        this.#zmax.push(val);
+    }
+    get zmax() {
+        return this.#zmax.slice(-1)[0];
+    }
+
+}
+
+export class PopCom extends HTMLElement {
+    totalUrl;
+    #total;
+
+    set total(val) { this.#total = val; this.init(); }
+    get total() { return this.#total }
+
+    constructor() {
+        super();
+        [plotlyLib, handsontableLib].forEach(this.loadLibs.bind(this));
+    }
+
+    loadLibs(info) {
+        if (info.label in globalThis) {
+            this[`${info.label}`] = Promise.resolve();
+        } else {
+            const lib = document.createElement('script');
+            lib.src = info.src;
+            this[`${info.label}`] = new Promise(resolve => {
+                lib.onload = () => resolve();
+            });
+            document.head.appendChild(lib);
+
+            if (info.css) {
+                info.css.forEach(url => {
+                    const link = document.createElement('link');
+                    link.rel = "stylesheet";
+                    link.href = url;
+                    document.head.appendChild(link);
+                })
+            }
+        }
+    }
+
     applyStyle(elm, style) {
         Object.entries(style).forEach(([prop, value]) => elm.style[prop] = value);
     }
@@ -326,13 +614,6 @@ export class PopCom extends HTMLElement {
         this.applyStyle(this, {
             display: 'block',
         });
-
-        if ('url' in this.dataset) {
-            this.totalUrl = this.dataset.url;
-        } else {
-            console.log('"data-url" attribute is required.');
-            return;
-        }
 
         this.innerHTML = `
         <div style="display: grid; grid-template-columns: 2fr 3fr; height: 600px">
@@ -346,18 +627,24 @@ export class PopCom extends HTMLElement {
             (elm) => (this[elm.dataset.role] = elm)
         );
 
-        this.total = await fetch(this.totalUrl).then((res) => res.json());
+        if ('url' in this.dataset) {
+            this.totalUrl = this.dataset.url;
+            this.total = await fetch(this.totalUrl).then((res) => res.json());
+        }
+    }
+
+    async init() {
         this.columns = this.total.columns.reduce((acc, val, idx) => { acc[val] = idx; return acc }, {});
         this.yearList = this.total.columns.filter(c => !Number.isNaN(Number(c)));
 
         if ('init' in this.dataset) {
-            await this.PlotlyLoad;
+            await this.Plotly;
             this.plot(this.dataset.init);
         }
-        await this.HandsontableLoad;
+        await this.Handsontable;
         this.drawGrid();
-
     }
+
     drawGrid() {
         function numRenderer(instance, td, row, col, prop, value, cellProperties) {
             Handsontable.renderers.NumericRenderer.apply(this, arguments);
@@ -471,6 +758,12 @@ export class PopCom extends HTMLElement {
         })
 
         const layout = {
+            title: {
+                text: rows[0][this.columns.name],
+                xanchor: 'right',
+                x: 1,
+                pad: { r: 5 }
+            },
             margin: { t: 0, r: 0, b: 50, l: 50, },
             hovermode: "x",
             legend: { traceorder: "reversed" },
