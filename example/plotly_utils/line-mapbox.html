@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta http-equiv="content-language" content="ja">
+    <script type='module'>
+        import { LineMapbox } from '/plotly_utils.mjs';
+        customElements.define('line-mapbox', LineMapbox)
+
+    </script>
+</head>
+
+<body>
+    <line-mapbox geojson='https://data.arakaki.tokyo/static/road/kosoku.geo.json'></line-mapbox>
+</body>
+
+</html>
