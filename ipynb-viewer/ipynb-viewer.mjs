@@ -132,6 +132,10 @@ class NbCell extends HTMLElement {
                     this.out.appendChild(this.outImg);
                 } else if ("text/plain" in out.data) {
                     this.out.insertAdjacentText("beforeend", out.data["text/plain"].join(""));
+                } else if ("application/javascript" in out.data) {
+                    const s = document.createElement("script");
+                    s.innerHTML = out.data["application/javascript"].join("");
+                    this.out.appendChild(s);
                 }
             }
         }
