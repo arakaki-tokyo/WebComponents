@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta http-equiv="content-language" content="ja">
+    <script type='module'>
+        import {StationJP} from "../../station.mjs";
+        customElements.define('station-jp', StationJP)
+
+    </script>
+</head>
+
+<body>
+    <station-jp 
+        color="company" 
+        size="2019" 
+        sizeref=100
+        option="'2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019'"
+        hovertemplate='<b>%{customdata.station}</b><br>【%{customdata.company}】%{customdata.line}<extra><b style="color:#333;">%{marker.size:,}人</b></extra>'
+    ></station-jp>
+    <!-- <station-jp 
+        color="2019" 
+        option="'2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019'"
+        hovertemplate='<b>%{customdata.station}</b><br>【%{customdata.company}】%{customdata.line}<extra><b style="color:#333;">%{marker.color:,}人</b></extra>'
+    ></station-jp> -->
+</body>
+
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta http-equiv="content-language" content="ja">
+    <script type='module'>
+        import { ScatterMapbox } from '/plotly_utils.mjs';
+        customElements.define('scatter-mapbox', ScatterMapbox)
+
+    </script>
+</head>
+
+<body>
+    <!-- <scatter-mapbox 
+        geojson='http://2.local.com/static/station/12.geo.json'
+        color="2019" 
+        hovertemplate='<b>%{customdata.station}</b><br>【%{customdata.company}】%{customdata.line}<extra><b style="color:#333;">%{marker.color:,}人</b></extra>'
+    ></scatter-mapbox> -->
+    <scatter-mapbox 
+        geojson='http://2.local.com/static/station/13.geo.json'
+        color="company" 
+        size="2019" 
+        sizeref=100
+        option="'2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019'"
+        hovertemplate='<b>%{customdata.station}</b><br>【%{customdata.company}】%{customdata.line}<extra><b style="color:#333;">%{marker.size:,}人</b></extra>'
+    ></scatter-mapbox>
+</body>
+
+</html>
