@@ -120,6 +120,27 @@ async function exec({ code }) {
     }
 }
 
+async function exec2({ code }) {
+    const pyodide = "Pyodide" in self ? await Pyodide : null;
+    if (!pyodide) {
+        self.postMessage({
+            error: "pyodide has not been loaded"
+        });
+        return;
+    }
+
+    try {
+        await pyodide.loadPackagesFromImports(code);
+        results = await pyodide.runPythonAsync(code)
+        self.postMessage(String(results));
+    }
+    catch (error) {
+        self.postMessage(
+            { error: String(error) }
+        );
+    }
+}
+
 
 self.onmessage = async (e) => {
     console.log(e)
