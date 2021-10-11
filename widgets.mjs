@@ -1,3 +1,8 @@
+export function onInput(widgets, f) {
+    const handler = (e) => f(e, ...(widgets.map(w => w.value)));
+    widgets.forEach(w => w.addEventListener("input", handler));
+}
+
 export class InputRange extends HTMLElement {
     _open = false;
     connectedCallback() {
@@ -63,4 +68,32 @@ export class OutputFor extends HTMLElement {
     async _exec() {
         this.innerHTML = await this.func(this.for.value);
     }
+}
+
+export class SelectBox extends HTMLElement {
+    constructor() {
+        super();
+        const shadow = this.attachShadow({ mode: "closed" });
+        this.select = document.createElement("select");
+        for (const a of this.attributes) this.select.setAttribute(a.name, a.value);
+        shadow.appendChild(this.select);
+
+        if ('init' in this.dataset) this.init(this.dataset.init);
+
+    }
+    init(obj) {
+        const seeds = obj.__proto__ === String.prototype ?
+            JSON.parse(obj) : obj;
+
+        const options = (seeds.__proto__ === Array.prototype) ?
+            seeds.map(seed => [seed, seed]) : Object.entries(obj);
+
+        let HTML = '';
+        options.forEach(opt => HTML += `<option value="${opt[1]}">${opt[0]}</option>`)
+
+        this.select.innerHTML = HTML;
+    }
+
+    set value(val) { this.select.value = val }
+    get value() { return this.select.value }
 }
