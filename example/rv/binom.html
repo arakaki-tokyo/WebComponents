@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script type="module">
+        const rvPromse = import("/rv.mjs");
+        const pyodide = await import("/py_cell/example/pyodide/py_worker.mjs");
+        globalThis.pyodide = pyodide;
+        pyodide.load(["numpy", "scipy"]);
+        
+        const rv = await rvPromse;
+        customElements.define("binom-dist", rv.Binomial);
+    </script>
+</head>
+
+<body>
+    <binom-dist exec="pyodide.exec2"></binom-dist>
+</body>
+
+</html>
