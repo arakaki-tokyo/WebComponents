@@ -109,7 +109,7 @@ async function exec({ code }) {
             }
         }
         self.postMessage({
-            results: results ? String(results) : "",
+            results: results !== undefined ? String(results) : "",
             log: out.log
         });
     }

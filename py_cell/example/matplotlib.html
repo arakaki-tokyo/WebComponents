@@ -3,63 +3,67 @@
 
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/vs2015.min.css" integrity="sha512-mtXspRdOWHCYp+f4c7CkWGYPPRAhq9X+xCvJMUBVAb6pqA4U8pxhT3RWT3LP3bKbiolYL2CkL1bSKZZO4eeTew==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script defer src="init_pyodide.js" onload='initPyodide({isWorker:true, packages:["pandas", "matplotlib", "bokeh"], init:["matplotlib"]})'></script>
+    <script defer src="init_pyodide.js" onload='initPyodide({isWorker:false, packages:["pandas", "matplotlib", "bokeh"], init:["matplotlib"]})'></script>
 </head>
 
 <body>
     <py-cell data-execute="false" data-pyodide="Pyodide">
-# if pyodide work in main thread, do this
-import os
-os.environ['MPLBACKEND'] = 'module://matplotlib.backends.html5_canvas_backend'</py-cell>
+        # if pyodide work in main thread, do this
+        import os
+        os.environ['MPLBACKEND'] = 'module://matplotlib.backends.html5_canvas_backend'</py-cell>
     <py-cell data-execute="false" data-pyodide="Pyodide">
-# if pyodide work in worker thread, do this
-import base64
-import os
+        # if pyodide work in worker thread, do this
+        import base64
+        import os
 
-from io import BytesIO
+        from io import BytesIO
 
-os.environ['MPLBACKEND'] = 'AGG'
+        os.environ['MPLBACKEND'] = 'AGG'
 
-import matplotlib.pyplot
+        import matplotlib.pyplot
 
 
-def ensure_matplotlib_patch():
+        def ensure_matplotlib_patch():
 
-    def show():
-        buf = BytesIO()
-        matplotlib.pyplot.savefig(buf, format='png')
-        buf.seek(0)
-        # encode to a base64 str
-        img = base64.b64encode(buf.read()).decode('utf-8')
-        matplotlib.pyplot.clf()
+            def show():
+                buf = BytesIO()
+                matplotlib.pyplot.savefig(buf, format='png')
+                buf.seek(0)
+                # encode to a base64 str
+                img = base64.b64encode(buf.read()).decode('utf-8')
+                matplotlib.pyplot.clf()
 
-        return f'<img src="data:image/png;base64,{img}">'
+                return f'<img src="data:image/png;base64,{img}">'
 
-    matplotlib.pyplot.show = show
+            matplotlib.pyplot.show = show
 
-ensure_matplotlib_patch()</py-cell>
-    <py-cell data-line="false" data-execute="false" data-pyodide="Pyodide">
-import matplotlib.pyplot as plt
-import numpy as np</py-cell>
+        ensure_matplotlib_patch()
+    </py-cell>
+    <py-cell data-execute="false" data-pyodide="Pyodide">
+        import matplotlib.pyplot as plt
+        import numpy as np
+    </py-cell>
     <py-cell data-pyodide="Pyodide">
-from matplotlib import pyplot as plt
-plt.figure()
-plt.plot([1,2,3])
-plt.show()</py-cell>
+        from matplotlib import pyplot as plt
+        plt.figure()
+        plt.plot([1,2,3])
+        plt.show()
+    </py-cell>
     <py-cell data-pyodide="Pyodide">
-from matplotlib import font_manager as fm
-import os
-import json
-# get fontlist form file
-fontist_file = os.path.join(os.path.dirname(fm.__file__), 'fontlist.json')
-with open(fontist_file) as f:
-fontlist_vendor = json.loads(f.read())
-# get fontlist from build
-fontlist_built = json.loads(json.dumps(fm.FontManager(), cls=fm._JSONEncoder))
-# reodering list to compare
-for list in ('afmlist', 'ttflist'):
-for fontlist in (fontlist_vendor, fontlist_built):
-fontlist[list].sort(key=lambda x: x['fname'])</py-cell>
+        from matplotlib import font_manager as fm
+        import os
+        import json
+        # get fontlist form file
+        fontist_file = os.path.join(os.path.dirname(fm.__file__), 'fontlist.json')
+        with open(fontist_file) as f:
+            fontlist_vendor = json.loads(f.read())
+        # get fontlist from build
+        fontlist_built = json.loads(json.dumps(fm.FontManager(), cls=fm._JSONEncoder))
+        # reodering list to compare
+        for list in ('afmlist', 'ttflist'):
+            for fontlist in (fontlist_vendor, fontlist_built):
+                fontlist[list].sort(key=lambda x: x['fname'])
+    </py-cell>
     <py-cell data-pyodide="Pyodide">
 # test_rendering
 from matplotlib import pyplot as plt

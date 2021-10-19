@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        .s2{
+            position: relative;
+        }
+        .s2 input{
+            margin: 2px;
+        }
+        .s2 output{
+            position: absolute;
+            transform: translate(-50%, 100%);
+        }
+        .s3{
+            position: relative;
+        }
+        .s3 input{
+            margin: 2px;
+        }
+        .s3 output{
+            width: 30px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            background: #03a9f4;
+            color: #fff;
+            font-size: 12px;
+            display: block;
+            position: absolute;
+            transform: translate(-50%, -30px);
+            border-radius: 6px;
+        }
+        .s3 output::before {
+            content: "";
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-top: 10px solid #03a9f4;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            margin-top: -1px;
+        }
+    </style>
+    <script defer type='module'>
+        import * as w from '/widgets.mjs';
+        globalThis.widgets = w;
+        customElements.define("w-slider", w.Slider);
+    </script>
+</head>
+<body>
+    <fieldset>
+        <legend>Slider</legend>
+        <p><w-slider></w-slider></p>
+        <p style="padding-bottom:2rem"><w-slider class="s2" open></w-slider></p>
+        <p style="padding-bottom:2rem"><w-slider class="s2" min=-100 max=0 open></w-slider></p>
+        <p style="padding-top:2rem"><w-slider class="s3" open></w-slider></p>
+    </fieldset>
+</body>
+</html>
