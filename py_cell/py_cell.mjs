@@ -61,34 +61,34 @@ const env = globalThis.PYCELLENV || {};
         }`
         // for matplotlib html5_canvas_backend v.0.18.0
         + `
-        [data-role="out"] .fa::before{
+        [data-role="out"] .matplotlib-toolbar-button::before{
             display: inline-block;
             height: 1rem;
             width: 1rem;
             background: #495057;
             transition-duration: 0.4s;
         }
-        [data-role="out"] .fa:hover::before{
+        [data-role="out"] .matplotlib-toolbar-button:hover::before{
             background: #fff;
         }
         
-        [data-role="out"] .fa-home::before {
+        [data-role="out"] .matplotlib-toolbar-button.fa-home::before {
             content: "";
             clip-path: url(#fa-home);
         }
-        [data-role="out"] .fa-arrow-left::before {
+        [data-role="out"] .matplotlib-toolbar-button.fa-arrow-left::before {
             content: "";
             clip-path: url(#fa-arrow-left);
         }
-        [data-role="out"] .fa-search-plus::before {
+        [data-role="out"] .matplotlib-toolbar-button.fa-search-plus::before {
             content: "";
             clip-path: url(#fa-search-plus);
         }
-        [data-role="out"] .fa-arrows::before {
+        [data-role="out"] .matplotlib-toolbar-button.fa-arrows::before {
             content: "";
             clip-path: url(#fa-arrows);
         }
-        [data-role="out"] .fa-arrow-right::before {
+        [data-role="out"] .matplotlib-toolbar-button.fa-arrow-right::before {
             content: "";
             clip-path: url(#fa-arrow-right);
         }
