@@ -5,11 +5,6 @@ import operator as op
 
 handlers = dict()
 
-def hello():
-    print("hello")
-    return "hello"
-
-
 def interact(*args, **kwargs):
     handler = args[0]
     if handler.__name__ == '<lambda>':
