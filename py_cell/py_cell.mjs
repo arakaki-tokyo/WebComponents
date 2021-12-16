@@ -651,6 +651,7 @@ export class PyCell extends HTMLElement {
     strToElm(str) {
         const container = document.createElement("div");
         container.style.whiteSpace = "initial";
+        container.style.padding = "0.5rem";
         container.innerHTML = str
             .replaceAll(/<\/?html.*?>/g, "")
             .replaceAll(/<\/?head.*?>/g, "")

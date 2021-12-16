@@ -1,3 +1,5 @@
+const katex = import('https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.mjs');
+
 const initScripts = {
     "urllib": `
         import email.message as em
@@ -102,7 +104,10 @@ async function exec({ code }) {
         await pyodide.loadPackagesFromImports(code);
         let results = await pyodide.runPythonAsync(code);
         if (pyodide.isPyProxy(results)) {
-            if ("_repr_html_" in results) {
+            if ("_repr_latex_" in results) {
+                const k = (await katex).default;
+                results = k.renderToString(results._repr_latex_().replace(/^\$+|\$+$/g, ""))
+            } else if ("_repr_html_" in results) {
                 results = results._repr_html_()
             } else if ("__repr__" in results) {
                 results = results.__repr__().replaceAll('<', '&lt;')
