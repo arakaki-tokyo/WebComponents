@@ -6,6 +6,14 @@ export function load(packages = [], init = []) {
 }
 
 export async function exec(code) {
+    return doExec("exec", code)
+}
+
+export async function exec2(code) {
+    return doExec("exec2", code)
+}
+
+function doExec(fname, code) {
     jobs = jobs.catch(() => undefined).then(() => new Promise((resolve, reject) => {
         pyodideWorker.onmessage = e => {
             if (e.data.error) {
@@ -14,7 +22,7 @@ export async function exec(code) {
                 resolve(e.data);
             }
         }
-        pyodideWorker.postMessage({ function: "exec", args: { code } })
+        pyodideWorker.postMessage({ function: fname, args: { code } })
     }))
     return jobs
 }

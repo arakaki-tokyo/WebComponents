@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css" integrity="sha512-3xLMEigMNYLDJLAgaGlDSxpGykyb+nQnJBzbkQy2a0gyVKL2ZpNOPIj1rD8IPFaJbwAgId/atho1+LBpWu5DhA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- pyodide -->
+    <script src="https://cdn.plot.ly/plotly-2.4.2.min.js"></script>
+    <!-- <script defer id="pyodideJs" src="https://cdn.jsdelivr.net/pyodide/v0.18.1/full/pyodide.js"></script> -->
+    <!-- <script>
+        const Pyodide = new Promise((resolve, reject) => {
+            document.getElementById("pyodideJs").onload = async e => {
+                window.pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.18.1/full/' });
+                resolve(pyodide);
+            }
+        })
+    </script> -->
+    <script type='module'>
+        globalThis.PYCELLENV = {
+            useWorker: "",
+            pyodide: "pyodide.exec"
+            // pyodide: "Pyodide"
+        };
+
+        globalThis.pyodide = await import('./pyodide/py_worker.mjs');
+        pyodide.load(["pandas", "matplotlib"], ["matplotlib", "webbrowser"]);
+
+        const {PyCell} = await import('../py_cell.mjs');
+        customElements.define("py-cell", PyCell);
+    </script>
+</head>
+
+<body>
+
+    <h2>Slider</h2>
+    <py-cell data-execute>
+        widgets.Slider()
+    </py-cell>
+    <py-cell data-execute data-shrink>
+        widgets.Slider(10)
+    </py-cell>
+    <py-cell data-execute>
+        widgets.Slider(-10)
+    </py-cell>
+    <py-cell data-execute>
+        widgets.Slider(1, 0)
+    </py-cell>
+    <py-cell data-execute>
+        widgets.Slider(1, 0, 100)
+    </py-cell>
+    <py-cell data-execute>
+        widgets.Slider(1, 0, 100, 0.1)
+    </py-cell>
+    <py-cell data-execute>
+        widgets.Slider(1, 0, 100, 0.1, description="0~100")
+    </py-cell>
+    <h2>interact</h2>
+    <p>引数1つ</p>
+    <py-cell data-execute>
+        def f(x):
+            return x
+
+        widgets.interact(f, x=10)
+    </py-cell>
+    <py-cell data-execute>
+        def f(x):
+            return x
+
+        widgets.interact(f, x=widgets.Slider(1, 0, 100, 0.1))
+    </py-cell>
+    <p>引数2つ</p>
+    <py-cell data-execute>
+        def f(x, y):
+            return x + y
+
+        widgets.interact(f, x=10, y=(0, 10))
+    </py-cell>
+    <p>引数と紐付かないウィジェットが与えられた場合</p>
+    <py-cell data-execute>
+        def f(x):
+            return x
+
+        widgets.interact(f, x=10, y=(0, 10))
+    </py-cell>
+    <p>引数と紐付くウィジェットが与えられない場合</p>
+    <py-cell data-execute>
+        def f(x):
+            return x
+
+        widgets.interact(f, y=(0, 10))
+    </py-cell>
+    <py-cell data-execute>
+        # widgets.interact(lambda x:x, x=10, y=(0, 10))
+    </py-cell>
+    
+    <section>
+        <!-- Plotly -->
+        <h2>Plotly</h2>
+        <py-cell>
+            import micropip
+            micropip.install('plotly==5.0.0')
+        </py-cell>
+        <py-cell>
+            import plotly.express as px
+            xs = range(-30, 30)
+            ys = list(map(lambda x: x**3, xs))
+            fig1 = px.scatter(x=xs, y=ys)
+            fig1.update_layout(
+            margin={'l':10, 'r':20, 'b':10, 't':20,'pad':0}
+            )
+            fig1
+        </py-cell>
+        <p>最も遅い例</p>
+        <p>😡表示ちらつくし耐えられない遅さ</p>
+        <py-cell>
+            def plot(a, b):
+                xs = range(a, b)
+                ys = list(map(lambda x: x**3, xs))
+                fig1 = px.scatter(x=xs, y=ys)
+                fig1.update_layout(
+                margin={'l':10, 'r':20, 'b':10, 't':20,'pad':0}
+                )
+                return fig1
+            widgets.interact(plot, a=(-30, 0), b=(0, 30))
+        </py-cell>
+        <p>python側でplotlyパッケージを使うがjsでちょっと早くする</p>
+        <p>😩pythonでpxを呼んでる分、げんなりする遅さ</p>
+        <div id="plot2"></div>
+        <py-cell>
+            def plot2(a, b):
+                xs = range(a, b)
+                ys = list(map(lambda x: x**3, xs))
+                fig1 = px.scatter(x=xs, y=ys)
+                return HTML("script", f'''
+                    Plotly.react("plot2", {fig1.to_json()})
+                ''')
+            widgets.interact(plot2, a=(-30, 0), b=(0, 30))
+        </py-cell>
+        <p>pyhon側ではplotlyを使わない。</p>
+        <p>😙レスポンスは良好。処理がちょっとかっこ悪いか</p>
+        <div id="plot3"></div>
+        <py-cell data-execute>
+            def plot3(a, b):
+                x = list(range(a, b))
+                y = list(map(lambda x: x**3, x))
+                return HTML("script", f'''
+                    Plotly.react(
+                        "plot3",
+                        [{{
+                            x: {x},
+                            y: {y}
+                        }}]
+                    )
+                ''')
+            widgets.interact(plot3, a=-10, b=10)
+        </py-cell>
+        
+    </section>
+    <section>
+        <!-- matplotlib -->
+        <h2>matplotlib</h2>
+        <py-cell >
+            # if pyodide work in main thread, do this
+            import os
+            os.environ['MPLBACKEND'] = 'module://matplotlib.backends.html5_canvas_backend'
+        </py-cell>
+        <py-cell >
+            import matplotlib
+            from matplotlib import pyplot as plt
+        </py-cell>
+        <py-cell >
+            def mp1(a, b):
+                x = list(range(a, b))
+                y = list(map(lambda x: x**3, x))
+                plt.plot(x, y)
+                return plt.show()
+            widgets.interact(mp1, a=-10, b=10)
+
+        </py-cell>
+        <py-cell >
+            
+        </py-cell>
+    </section>
+    <section>
+        <!-- scipy -->
+        <h2>scipy</h2>
+        <py-cell data-execute>
+            import numpy as np
+            from scipy.stats import binom
+        </py-cell>
+        <py-cell data-execute>
+            n = 10
+            p = 0.5
+            x = np.arange(0, n+1)
+            ax = plt.plot(x, binom.pmf(x, n, p), 'bo', ms=8, label='binom pmf')
+            plt.vlines(x, 0, binom.pmf(x, n, p), colors='b', lw=5, alpha=0.5)
+
+            rv = binom(n, p)
+            plt.vlines(x, 0, rv.pmf(x), colors='k', linestyles='-', lw=1,
+                    label='frozen pmf')
+            plt.legend(loc='best', frameon=False)
+            plt.show()
+        </py-cell>
+        <div id="plot_binom" style="position: relative; height: 200px;">
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="position:absolute; top:0; bottom:0; left:0; right:0; z-index:-1; margin:0 auto; background: none; display: block; shape-rendering: auto;" width="200px" height="200px" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
+                <circle cx="38" cy="50" fill="#1f77b4" r="12">
+                    <animate attributeName="cx" repeatCount="indefinite" dur="1s" keyTimes="0;0.5;1" values="38;62;38" begin="-0.5s"></animate>
+                </circle>
+                <circle cx="62" cy="50" fill="#ff7f0e" r="12">
+                    <animate attributeName="cx" repeatCount="indefinite" dur="1s" keyTimes="0;0.5;1" values="38;62;38" begin="0s"></animate>
+                </circle>
+                <circle cx="38" cy="50" fill="#1f77b4" r="12">
+                    <animate attributeName="cx" repeatCount="indefinite" dur="1s" keyTimes="0;0.5;1" values="38;62;38" begin="-0.5s"></animate>
+                    <animate attributeName="fill-opacity" values="0;0;1;1" calcMode="discrete" keyTimes="0;0.499;0.5;1" dur="1s" repeatCount="indefinite"></animate>
+                </circle>
+            </svg>
+        </div>
+        <py-cell data-shrink data-execute>
+            def plot_binom(p, n):
+                rv = binom(n=n, p=p)
+                x = np.arange(0, n+1, 1)
+                pmf = rv.pmf(x).tolist()
+                cdf = rv.cdf(x).tolist()
+                x = x.tolist()
+                mean = f'{rv.mean():.2f}'
+                std = f'{rv.std():.2f}'
+
+                data = {"x": [x], "y": [pmf, cdf]}
+                layout = {"annotations[0].text": f'mean: {mean}, std: {std}'}
+                return HTML("script", f'''
+                    Plotly.update(
+                        "plot_binom",
+                        {data},
+                        {layout}
+                    )
+                ''')
+            HTML("script", '''
+                    (()=>{
+                        const data = [
+                            {
+                                name: "pmf(Probability mass function)",
+                                x: [],
+                                y: [],
+                                type: 'bar'
+                            },
+                            {
+                                name: "cdf(Cumulative Distribution Function)",
+                                type: 'scatter', mode: "lines",
+                                x: [],
+                                y: [],
+                                yaxis: "y2"
+                            }
+                        ];
+
+                        const layout = {
+                            height: 500,
+                            yaxis: {
+                                title: "pmf",
+                                autorange: true,
+                                scaleanchor: 'x',
+                                scaleratio: 200,
+                                constraintoward: "bottom",
+                                titlefont: { color: '#1f77b4' },
+                                tickfont: { color: '#1f77b4' }
+                            },
+                            yaxis2: {
+                                title: "cdf",
+                                range: [0, 1.05],
+                                titlefont: { color: '#ff7f0e' },
+                                tickfont: { color: '#ff7f0e' },
+                                overlaying: 'y',
+                                side: "right",
+                            },
+                            legend: {
+                                orientation: "h",
+                                xanchor: "center",
+                                x: 0.5,
+                                yanchor: "bottom",
+                                y: 1,
+                            },
+                            updatemenus: [
+                                {
+                                    buttons: [
+                                        {
+                                            method: "relayout",
+                                            args: ["yaxis.scaleanchor", "x"],
+                                            label: "xy比固定"
+                                        },
+                                        {
+                                            method: "relayout",
+                                            args: ["yaxis.scaleanchor", ""],
+                                            label: "固定解除"
+                                        }
+                                    ],
+                                    xanchor: "right",
+                                    x: 0,
+                                    yanchor: "bottom",
+                                    y: 1.05
+                                }
+                            ],
+                            hovermode: "x",
+                            annotations: [{
+                                xref: "paper",
+                                x: 1,
+                                yref: "paper",
+                                y: -0,
+                                text: '',
+                                showarrow: false,
+                                bgcolor: 'rgba(0,0,0,0.5)',
+                                font: { color: 'white' }
+                            }]
+                        };
+
+                        const config = {
+                            'scrollZoom': true,
+                            responsive: true
+                        };
+
+                        Plotly.newPlot("plot_binom", data, layout, config)
+                    })();
+            ''') + widgets.interact(
+                plot_binom, 
+                n=widgets.Slider(min=1, max=1000, value=50), 
+                p=widgets.Slider(min=0, max=1, step=0.01, value=0.5)
+            )
+        </py-cell>
+        <py-cell>
+            
+        </py-cell>
+        <py-cell>
+
+        </py-cell>
+        <py-cell>
+
+        </py-cell>
+        <py-cell>
+
+        </py-cell>
+    </section>
+
+</body>
+
+</html>
