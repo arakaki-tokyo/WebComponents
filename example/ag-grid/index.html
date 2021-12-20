@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Ag-Grid Basic Example</title>
+    <!-- <script defer src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.js"></script> -->
+    <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.noStyle.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-grid.css">
+    <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-theme-alpine.css">
+    <script defer src="main.js"></script>
+    <style>
+        .mycell-common *{
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="myGrid" style="height: 200px; width:500px;" class="ag-theme-alpine"></div>
+    <button onclick="getSelectedRows()">Get Selected Rows</button>
+    <div id='grid2' style=""  class="ag-theme-alpine"></div>
+</body>
+</html>

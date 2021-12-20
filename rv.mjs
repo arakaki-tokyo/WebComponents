@@ -87,11 +87,11 @@ export class Binomial extends RV {
         from scipy.stats import binom
     `;
 
-    connectedCallback() {
-        this.style.display = "none";
+    async connectedCallback() {
+        this.style.visibility = "hidden";
 
         if (customElements.get("w-slider") === undefined) {
-            customElements.define("w-slider", widgets.InputRange);
+            customElements.define("w-slider", widgets.Slider);
         }
 
         this.innerHTML = `
@@ -109,52 +109,43 @@ export class Binomial extends RV {
         )
         this.initialized.then(() => {
             this.n.dispatchEvent(new Event("input"));
-            this.style.display = "block";
+            this.style.visibility = "visible";
         })
+
+        await this.Plotly;
+        this.initPlot();
     }
-
-    async plot(n, p) {
-        let result = await this.exec(`
-            rv = binom(n=${n}, p=${p})
-            x = np.arange(0, ${Number(n) + 1})
-            pmf = rv.pmf(x)
-            cdf = rv.cdf(x)
-            {"x": x.tolist(), "pmf": pmf.tolist(), "cdf": cdf.tolist()}
-        `);
-
-        const { x, pmf, cdf } = Function(`return ${result}`)();
-
+    initPlot() {
         const data = [
             {
                 name: "pmf(Probability mass function)",
-                x,
-                y: pmf,
+                x: [],
+                y: [],
                 type: 'bar'
             },
             {
                 name: "cdf(Cumulative Distribution Function)",
                 type: 'scatter', mode: "lines+markers",
-                x,
-                y: cdf,
+                x: [],
+                y: [],
                 yaxis: "y2"
             }
         ];
 
         const layout = {
             height: 500,
-            margin: { b: 0 },
             yaxis: {
                 title: "pmf",
                 autorange: true,
                 scaleanchor: 'x',
-                scaleratio: 20,
+                scaleratio: 200,
                 constraintoward: "bottom",
                 titlefont: { color: '#1f77b4' },
                 tickfont: { color: '#1f77b4' }
             },
             yaxis2: {
                 title: "cdf",
-                range: [0, 1.1],
+                range: [0, 1.05],
                 titlefont: { color: '#ff7f0e' },
                 tickfont: { color: '#ff7f0e' },
                 overlaying: 'y',
@@ -162,9 +153,42 @@ export class Binomial extends RV {
             },
             legend: {
                 orientation: "h",
+                xanchor: "center",
+                x: 0.5,
+                yanchor: "bottom",
                 y: 1,
-                yanchor: "bottom"
-            }
+            },
+            updatemenus: [
+                {
+                    buttons: [
+                        {
+                            method: "relayout",
+                            args: ["yaxis.scaleanchor", "x"],
+                            label: "xy比固定"
+                        },
+                        {
+                            method: "relayout",
+                            args: ["yaxis.scaleanchor", ""],
+                            label: "固定解除"
+                        }
+                    ],
+                    xanchor: "right",
+                    x: 0,
+                    yanchor: "bottom",
+                    y: 1.05
+                }
+            ],
+            hovermode: "x",
+            annotations: [{
+                xref: "paper",
+                x: 1,
+                yref: "paper",
+                y: -0,
+                text: '',
+                showarrow: false,
+                bgcolor: 'rgba(0,0,0,0.5)',
+                font: { color: 'white' }
+            }]
         };
 
         const config = {
@@ -172,6 +196,24 @@ export class Binomial extends RV {
             responsive: true
         };
 
-        Plotly.react(this.plotContainer, data, layout, config);
+        Plotly.newPlot(this.plotContainer, data, layout, config)
+    }
+    async plot(n, p) {
+        let result = await this.exec(`
+            rv = binom(n=${n}, p=${p})
+            x = np.arange(0, ${Number(n) + 1})
+            pmf = rv.pmf(x)
+            cdf = rv.cdf(x)
+            {"x": x.tolist(), "pmf": pmf.tolist(), "cdf": cdf.tolist(), "mean": f'{rv.mean():.2f}', "std": f'{rv.std():.2f}'}
+        `);
+
+        const { x, pmf, cdf, mean, std } = Function(`return ${result}`)();
+
+        const data = {
+            x: [x],
+            y: [pmf, cdf]
+        }
+
+        Plotly.update(this.plotContainer, data, { "annotations[0].text": `mean: ${mean}, std: ${std}` });
     }
 }
