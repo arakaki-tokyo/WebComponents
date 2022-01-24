@@ -4,11 +4,11 @@
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css" integrity="sha512-3xLMEigMNYLDJLAgaGlDSxpGykyb+nQnJBzbkQy2a0gyVKL2ZpNOPIj1rD8IPFaJbwAgId/atho1+LBpWu5DhA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- pyodide -->
-    <script defer id="pyodideJs" src="https://cdn.jsdelivr.net/pyodide/v0.18.0/full/pyodide.js"></script>
+    <script defer id="pyodideJs" src="https://cdn.jsdelivr.net/pyodide/v0.19.0/full/pyodide.js"></script>
     <script>
         const Pyodide = new Promise((resolve, reject) => {
             document.getElementById("pyodideJs").onload = async e => {
-                window.pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.18.0/full/' });
+                window.pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.19.0/full/' });
                 resolve(pyodide);
             }
         })

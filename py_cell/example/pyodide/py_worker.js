@@ -71,9 +71,9 @@ class OutBuffer {
 }
 
 function load({ packages, init } = {}) {
-    importScripts('https://cdn.jsdelivr.net/pyodide/v0.18.0/full/pyodide.js');
+    importScripts('https://cdn.jsdelivr.net/pyodide/v0.19.0/full/pyodide.js');
     self.Pyodide = (async () => {
-        self.pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.18.0/full/' });
+        self.pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.19.0/full/' });
         await self.pyodide.loadPackage(packages);
         if (init) {
             for (let i of init) {
