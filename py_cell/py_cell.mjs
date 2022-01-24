@@ -66,7 +66,6 @@ const env = globalThis.PYCELLENV || {};
             height: 1rem;
             width: 1rem;
             background: #495057;
-            transition-duration: 0.4s;
         }
         [data-role="out"] .matplotlib-toolbar-button:hover::before{
             background: #fff;
@@ -572,10 +571,12 @@ export class PyCell extends HTMLElement {
         } else {
             if ("pyodide" in this.env) {
                 this.out.innerHTML = `${this.env.pyodide} is not in global.`
+                this.btnRun.disabled = true;
                 return;
             } else {
                 if (this.useWorker) {
                     this.out.innerHTML = "'data-pyodide' attribute is not given."
+                    this.btnRun.disabled = true;
                     return;
                 } else {
                     // worker未使用の場合にはdata-pyodide属性はなくてもいい
@@ -583,57 +584,72 @@ export class PyCell extends HTMLElement {
                     initPython(globalThis.pyodide.runPythonAsync);
                     return;
                 }
-
             }
-            this.btnRun.disabled = true;
         }
 
     }
     write(s) {
-        this.out.innerText += s;
+        const p = document.createElement('p');
+        p.style.whiteSpace = 'pre';
+        p.style.margin = 0;
+        p.innerText = s
+        this.out.appendChild(p);
     }
-    execCode(code, resultsTo, logTo, e) {
+    execCode(code, resultsTo, logTo, ev) {
         this.constructor.#queue = this.constructor.#queue.catch(() => true).then(async () => {
             try {
 
+                let results = "";
+                let log = "";
                 resultsTo.innerHTML = "";
-                if (this.useWorker) {
-                    const { results, log } = await this.Pyodide(code);
-                    logTo.write(log);
-                    resultsTo.appendChild(this.strToElm(results));
 
-                } else {
+                if (this.useWorker) {// worker
+                    ({ results, log } = await this.Pyodide(code));
+                } else {// not worker
                     const pyodide = await this.Pyodide || window.pyodide;
                     await pyodide.runPythonAsync('if not "sys" in dir(): import sys');
                     const sys = pyodide.globals.get('sys');
-                    sys.stdout = logTo;
-
+                    const buf = {
+                        log: "",
+                        write: function (s) { this.log += s }
+                    };
+                    sys.stdout = buf;
                     await pyodide.loadPackagesFromImports(code);
-                    const results = await pyodide.runPythonAsync(code);
+                    results = await pyodide.runPythonAsync(code);
+                    log = buf.log;
                     sys.destroy();
 
                     if (results !== undefined) {
-                        let resultsStr = results;
                         if (pyodide.isPyProxy(results)) {
                             if ("_repr_html_" in results) {
-                                resultsStr = results._repr_html_()
+                                results = results._repr_html_()
                             } else if ("__repr__" in results) {
-                                resultsStr = results.__repr__().replaceAll('<', '&lt;')
+                                results = results.__repr__().replaceAll('<', '&lt;')
                             }
                         }
-                        resultsTo.appendChild(this.strToElm(String(resultsStr)));
+                        results = String(results)
+                    } else {
+                        results = "";
                     }
+                }
+
+                logTo.write(log);
+                resultsTo.appendChild(this.strToElm(results));
+                resultsTo.isVisible = true;
+
+                if (!this.useWorker) {// not worker
+                    // matplotlibの図が出力されていたら実行したセルに持ってくる
                     if (document.body.lastElementChild.id.startsWith("matplotlib")) {
                         resultsTo.appendChild(document.body.lastElementChild);
                     }
                 }
-                resultsTo.isVisible = true;
             } catch (e) {
+                console.log(e);
                 this.write(e);
             }
             // update style of btnRun and executed
-            e.target.disabled = false;
-            e.target.style.color = "";
+            ev.target.disabled = false;
+            ev.target.style.color = "";
             this.loading.style.display = "none";
             this.executed.innerHTML = `[${this.constructor.executeCnt += 1}]`;
         })
