@@ -177,7 +177,7 @@ class PyCellIn extends HTMLElement {
         });
 
         this.innerHTML = `
-            <pre style="box-sizing:border-box; margin: 0;"><code class="lang-py" data-role="code"></code></pre>
+            <pre style="box-sizing:border-box; margin: 0;"><code class="lang-py" data-role="code" style="overflow-y:hidden;"></code></pre>
         `
         this.querySelectorAll("[data-role]").forEach(elm => {
             this[elm.dataset.role] = elm;
