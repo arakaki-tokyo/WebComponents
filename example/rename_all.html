@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Rename All</title>
+        <script type="module">
+            const {RenameAll} = await import('/rename_all.mjs');
+            customElements.define("rename-all", RenameAll)
+        </script>
+    </head>
+    <body>
+        <div>
+            <rename-all></rename-all>
+        </div>
+    </body>
+</html>
