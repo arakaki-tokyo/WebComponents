@@ -104,13 +104,18 @@ async function exec({ code }) {
         await pyodide.loadPackagesFromImports(code);
         let results = await pyodide.runPythonAsync(code);
         if (pyodide.isPyProxy(results)) {
-            if ("_repr_latex_" in results) {
-                const k = (await katex).default;
-                results = k.renderToString(results._repr_latex_().replace(/^\$+|\$+$/g, ""))
-            } else if ("_repr_html_" in results) {
+            if ("_repr_html_" in results) {
                 results = results._repr_html_()
+            } else if ("_repr_latex_" in results) {
+                results = results._repr_latex_();
+                if (typeof (results) === "string") {
+                    const k = (await katex).default;
+                    results = k.renderToString(results.replace(/^\$+|\$+$/g, ""))
+                }
             } else if ("__repr__" in results) {
-                results = results.__repr__().replaceAll('<', '&lt;')
+                results = results.__repr__();
+                if (typeof (results) === "string")
+                    results = results.replaceAll('<', '&lt;');
             }
         }
         self.postMessage({
