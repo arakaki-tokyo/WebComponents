@@ -592,6 +592,7 @@ export class PyCell extends HTMLElement {
         const p = document.createElement('p');
         p.style.whiteSpace = 'pre';
         p.style.margin = 0;
+        p.style.fontFamily = "consolas";
         p.innerText = s
         this.out.appendChild(p);
     }
