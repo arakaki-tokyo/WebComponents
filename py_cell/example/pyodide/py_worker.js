@@ -1,5 +1,5 @@
 const katex = import('https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.mjs');
-
+const dirName = location.href.match(/^.*\//g)[0];
 const initScripts = {
     "urllib": `
         import email.message as em
@@ -53,7 +53,23 @@ const initScripts = {
         
             matplotlib.pyplot.show = show
         
-        ensure_matplotlib_patch()    
+        ensure_matplotlib_patch()
+
+        # Set Japanese Font
+        import pyodide
+
+        URL = '${dirName}ipaexg.ttf'
+        path = '/lib/python3.9/site-packages/matplotlib/mpl-data/fonts/ttf/ipaexg.ttf'
+        with open(path, "wb") as f:
+            f.write(await(await pyodide.http.pyfetch(URL)).bytes())
+        
+        import matplotlib as mpl
+        import matplotlib.font_manager as fm
+        
+        font_name = 'IPAexGothic'
+        # fm.fontManager.ttflist.insert(0, fm.FontEntry(fname=path, name=font_name))
+        fm.fontManager.addfont(path)
+        mpl.rcParams['font.family'] = font_name
         `,
     "webbrowser": `
         import webbrowser
