@@ -56,14 +56,14 @@ const initScripts = {
         ensure_matplotlib_patch()
 
         # Set Japanese Font
+        import matplotlib as mpl
         import pyodide
 
         URL = '${dirName}ipaexg.ttf'
-        path = '/lib/python3.9/site-packages/matplotlib/mpl-data/fonts/ttf/ipaexg.ttf'
+        path = os.path.join(mpl.get_data_path(), "fonts/ttf/ipaexg.ttf")
         with open(path, "wb") as f:
             f.write(await(await pyodide.http.pyfetch(URL)).bytes())
         
-        import matplotlib as mpl
         import matplotlib.font_manager as fm
         
         font_name = 'IPAexGothic'
@@ -108,9 +108,9 @@ class OutBuffer {
 globalThis.DISPLAY = "";
 
 function load({ packages, init } = {}) {
-    importScripts('https://cdn.jsdelivr.net/pyodide/v0.19.0/full/pyodide.js');
+    importScripts('https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js');
     self.Pyodide = (async () => {
-        self.pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.19.0/full/' });
+        self.pyodide = await loadPyodide();
         await self.pyodide.loadPackage(packages);
         if (init) {
             for (let i of init) {

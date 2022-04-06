@@ -21,14 +21,12 @@ async function initPyodide({ isWorker, packages = [], sw, init = [] }) {
 
         const pyodideSrc = document.createElement("script");
         pyodideSrc.id = "pyodideJs";
-        pyodideSrc.src = "https://cdn.jsdelivr.net/pyodide/v0.19.0/full/pyodide.js";
+        pyodideSrc.src = "https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js";
         document.head.appendChild(pyodideSrc);
 
         window.Pyodide = new Promise((resolve, reject) => {
             document.getElementById("pyodideJs").onload = async (e) => {
-                const pyodide = await loadPyodide({
-                    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.19.0/full/",
-                });
+                const pyodide = await loadPyodide();
                 await pyodide.loadPackage(packages);
                 resolve(pyodide);
             };
