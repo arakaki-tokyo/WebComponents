@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/vs2015.min.css" integrity="sha512-mtXspRdOWHCYp+f4c7CkWGYPPRAhq9X+xCvJMUBVAb6pqA4U8pxhT3RWT3LP3bKbiolYL2CkL1bSKZZO4eeTew==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script defer src="init_pyodide.js" onload='initPyodide({isWorker:true, packages:["pandas", "matplotlib"], init:["matplotlib", "PIL"]})'></script>
+</head>
+
+<body>
+    <div>
+        <file-to-py></file-to-py>
+    </div>
+    <py-cell data-execute">
+        import matplotlib.pyplot as plt
+        import numpy as np
+        from PIL import Image, ImageFilter
+    </py-cell>
+    <py-cell>
+        # PIL初期化
+        # py_worker.jsに追加済み
+        import js
+        import io
+        import base64
+        import PIL.ImageShow
+        class MyViewer(PIL.ImageShow.Viewer):
+            def show(self, image, **options):
+                ext = image.format
+                buf = io.BytesIO()
+                image.save(buf, format=ext)
+                js.DISPLAY = f'<img src="data:image/{ext.lower()};base64,{base64.b64encode(buf.getvalue()).decode()}">'
+                return 1
+
+        PIL.ImageShow.register(MyViewer(), 0)
+    </py-cell>
+    <py-cell>
+        # matplotlibのサンプル画像を一覧するサンプル
+        import os
+        import matplotlib as mpl
+        import matplotlib.pyplot as plt
+        from PIL import Image
+
+        path = mpl.get_data_path() + "/sample_data"
+        pngs = [name for name in os.listdir(path) if ".png" == os.path.splitext(name)[1]]
+
+        COL = 3
+        ROW = len(pngs) // COL + 1
+
+        fig = plt.figure(tight_layout=True)
+
+        for i, png in enumerate(pngs):
+            ax = fig.add_subplot(ROW, COL, i+1)
+            ax.imshow(Image.open(path+f"/{png}"))
+            ax.set_title(png)
+            
+        plt.show()
+    </py-cell>
+    <py-cell>
+        im = Image.open(path+f"/{pngs[0]}")
+        im.show()</py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell>
+    <py-cell></py-cell> 
+</body>
+
+</html>

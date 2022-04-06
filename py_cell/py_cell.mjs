@@ -31,7 +31,7 @@ async function initPython(exec) {
     }
     return true
 }
-const env = globalThis.PYCELLENV || {};
+const ENV = globalThis.PYCELLENV || {};
 
 (function insertStyle() {
     const style = document.createElement("style");
@@ -493,7 +493,7 @@ export class PyCell extends HTMLElement {
     static #queue = Promise.resolve();
 
     async connectedCallback() {
-        this.env = { ...env };
+        this.env = { ...ENV };
         for (const key in this.dataset) {
             this.env[key] = this.dataset[key];
         }
@@ -502,8 +502,8 @@ export class PyCell extends HTMLElement {
         this.innerHTML = `
             <stretch-able ${this.env.shrink !== undefined ? "visible=false" : ""}>
                 <py-cell-in data-role="input" 
-                    ${this.env.line === "false" ? 'no-line' : ''}
-                    ${this.env.highlight === "false" ? 'no-highlight' : ''}
+                    ${String(this.env.line) === "false" ? 'no-line' : ''}
+                    ${String(this.env.highlight) === "false" ? 'no-highlight' : ''}
                 >${this.innerHTML}</py-cell-in>
                 <div style="display: flex; justify-content: space-between;">
                     <div data-role="executed"></div>
@@ -555,7 +555,7 @@ export class PyCell extends HTMLElement {
         this.input.addEventListener("execute", () => this.btnRun.dispatchEvent(new Event("click")))
 
         // initialize
-        this.useWorker = ("useWorker" in this.env && this.env.useWorker !== "false");
+        this.useWorker = ("useWorker" in this.env && String(this.env.useWorker) !== "false");
         if ((Function(`try{return typeof ${this.env.pyodide}}catch(e){return "undefined"}`)()) !== "undefined") {
             this.Pyodide = Function(`return ${this.env.pyodide}`)();
 
@@ -565,7 +565,7 @@ export class PyCell extends HTMLElement {
             } else {
                 initPython(this.Pyodide);
             }
-            if ("execute" in this.env && this.env.execute != "false") {
+            if ("execute" in this.env && String(this.env.execute) != "false") {
                 this.btnRun.dispatchEvent(new Event("click"));
             }
         } else {
@@ -696,5 +696,79 @@ export class PyCell extends HTMLElement {
             s.replaceWith(newScript);
         })
         return container
+    }
+}
+
+/**
+ * ローカルのファイルをpythonのCWDにロードする
+ * 
+ * **required**
+ * - globalThis.PYCELLENV
+ * - globalThis.PYCELLENV.useWorker
+ * - globalThis.PYCELLENV.pyodide
+ */
+export class FileToPy extends HTMLElement {
+    connectedCallback() {
+        this.innerHTML =
+            '<input type="file" multiple><div style="font-size:.8rem; margin: 0.5rem;"></div>';
+
+        [...this.children].forEach(elm => this[elm.tagName.replaceAll("-", "")] = elm);
+
+        if (ENV.useWorker) {
+            this.pyodide = Promise.resolve(Function(`return ${ENV.pyodide}`)());
+        } else {
+            this.pyodide = new Promise(resolve => {
+                Function(`return ${ENV.pyodide}`)().then(p => resolve(p.runPythonAsync));
+            })
+
+        }
+
+        this.INPUT.addEventListener("change", async e => {
+            this.DIV.innerHTML = 'loading...<br>' + this.loadingSVG();
+
+            const exec = await this.pyodide;
+
+            await exec(`import pyodide`);
+            this.DIV.innerText = "loaded!\n";
+            [...e.target.files].forEach(async f => {
+                this.DIV.innerText += `${f.name}\n`;
+                const FURL = URL.createObjectURL(f);
+                await exec(`
+                    URL = '${FURL}'
+                    with open('${f.name}', "wb") as f:
+                        f.write(await(await pyodide.http.pyfetch(URL)).bytes())
+                `);
+
+                URL.revokeObjectURL(FURL)
+            })
+        })
+    }
+
+    loadingSVG() {
+        return `
+        <style>
+            circle{
+                transform-origin: center;
+                animation: rotate 1s infinite ease-in-out both;
+            }
+            @keyframes rotate {
+                0%   { transform: rotate(0);} 
+                100% { transform: rotate(360deg);}
+            }
+        </style>
+        <svg width="30" viewBox="0 0 12 12">
+          <g style="transform: rotate(45deg); transform-origin: center;">
+            <circle cx="3" cy="3" r="1" fill="hsl(0, 100%, 50%)"></circle>
+            <circle cx="9" cy="3" r="1" fill="hsl(90, 100%, 50%)"></circle>
+            <circle cx="3" cy="9" r="1" fill="hsl(180, 100%, 50%)"></circle>
+            <circle cx="9" cy="9" r="1" fill="hsl(270, 100%, 50%)"></circle>
+          </g>
+          <g style="">
+            <circle cx="3" cy="3" r="1" fill="hsl(315, 100%, 50%)"></circle>
+            <circle cx="9" cy="3" r="1" fill="hsl(45, 100%, 50%)"></circle>
+            <circle cx="3" cy="9" r="1" fill="hsl(135, 100%, 50%)"></circle>
+            <circle cx="9" cy="9" r="1" fill="hsl(225, 100%, 50%)"></circle>
+          </g>
+        </svg>`
     }
 }
