@@ -5,21 +5,19 @@ async function initPyodide({ isWorker, packages = [], sw, init = [] }) {
             .catch(error => console.log('Service worker registration failed, error:', error));
     }
 
+    const ENV = {}
+
     const cells = document.querySelectorAll("py-cell");
     if (isWorker) {
         const pyodide = await import("./pyodide/py_worker.mjs");
-        cells.forEach((cell) => {
-            cell.setAttribute("data-use-worker", "ture");
-            cell.setAttribute("data-pyodide", "pyodide.exec");
-        });
+        ENV.useWorker = true;
+        ENV.pyodide = "pyodide.exec";
 
         pyodide.load(packages, init);
         globalThis.pyodide = pyodide;
     } else {
-        cells.forEach((cell) => {
-            cell.setAttribute("data-use-worker", "false");
-            cell.setAttribute("data-pyodide", "Pyodide");
-        });
+        ENV.useWorker = false;
+        ENV.pyodide = "Pyodide";
 
         const pyodideSrc = document.createElement("script");
         pyodideSrc.id = "pyodideJs";
@@ -37,6 +35,9 @@ async function initPyodide({ isWorker, packages = [], sw, init = [] }) {
         });
     }
 
-    const { PyCell } = await import("../py_cell.mjs");
+    globalThis.PYCELLENV = ENV;
+
+    const { PyCell, FileToPy } = await import("../py_cell.mjs");
     customElements.define("py-cell", PyCell);
+    customElements.define("file-to-py", FileToPy);
 }
