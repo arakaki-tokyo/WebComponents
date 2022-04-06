@@ -74,7 +74,27 @@ const initScripts = {
     "webbrowser": `
         import webbrowser
         webbrowser.get = lambda:None
-        `
+        `,
+    "PIL": `
+        import js
+        import io
+        import base64
+        import PIL.ImageShow
+        class PyCellViewer(PIL.ImageShow.Viewer):
+            def show(self, image, **options):
+                if image.format is not None:
+                    ext = image.format
+                elif "IMAGE_SHOW_FORMAT" in globals() and IMAGE_SHOW_FORMAT != "":
+                    ext = IMAGE_SHOW_FORMAT
+                else:
+                    ext = "PNG"
+                buf = io.BytesIO()
+                image.save(buf, format=ext)
+                js.DISPLAY = f'<img src="data:image/{ext.lower()};base64,{base64.b64encode(buf.getvalue()).decode()}">'
+                return 1
+
+        PIL.ImageShow.register(PyCellViewer(), 0)
+        `,
 }
 
 class OutBuffer {
@@ -85,6 +105,7 @@ class OutBuffer {
         this.log += s;
     }
 }
+globalThis.DISPLAY = "";
 
 function load({ packages, init } = {}) {
     importScripts('https://cdn.jsdelivr.net/pyodide/v0.19.0/full/pyodide.js');
@@ -119,7 +140,10 @@ async function exec({ code }) {
 
         await pyodide.loadPackagesFromImports(code);
         let results = await pyodide.runPythonAsync(code);
-        if (pyodide.isPyProxy(results)) {
+        if (globalThis.DISPLAY) {
+            results = globalThis.DISPLAY;
+            globalThis.DISPLAY = "";
+        } else if (pyodide.isPyProxy(results)) {
             if ("_repr_html_" in results) {
                 results = results._repr_html_()
             } else if ("_repr_latex_" in results) {
